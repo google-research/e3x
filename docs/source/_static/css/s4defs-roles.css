@@ -1,0 +1,65 @@
+/* Colored text (and other decorations). Usage: :black:`black text` */
+
+.black {
+    color: black;
+}
+
+.silver {
+    color: silver;
+}
+
+.gray {
+    color: gray;
+}
+
+.white {
+    color: white;
+}
+
+.maroon {
+    color: maroon;
+}
+
+.red {
+    color: red;
+}
+
+.purple {
+    color: purple;
+}
+
+.fuchsia {
+    color: fuchsia;
+}
+
+.green {
+    color: green;
+}
+
+.lime {
+    color: lime;
+}
+
+.olive {
+    color: olive;
+}
+
+.yellow {
+    color: yellow;
+}
+
+.navy {
+    color: navy;
+}
+
+.blue {
+    color: blue;
+}
+
+.teal {
+    color: teal;
+}
+
+.aqua {
+    color: aqua;
+}
