@@ -23,9 +23,11 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 ## [Unreleased]
 
+* Increased minimum required Python version to 3.9
+
 ## [1.0.0] - 2023-12-31
 
 * Initial release
 
-[Unreleased]: https://github.com/google-research/e3x/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/google-research/e3x/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/google-research/e3x/releases/tag/v1.0.0
