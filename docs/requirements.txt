@@ -1,0 +1,8 @@
+sphinx==7.2.6
+sphinx-autodoc-typehints==1.25.2
+sphinx-rtd-theme==2.0.0
+nbsphinx==0.9.3
+jupyter_sphinx==0.5.3
+ipykernel==6.29.0
+pypandoc_binary==1.12
+matplotlib==3.4.3
