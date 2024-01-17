@@ -11,7 +11,16 @@ introduces notation used throughout the documentation. To learn how to use E3x,
 please refer to the :ref:`Examples`, which show how to solve common tasks with
 simple toy problems. If you encounter any difficulties or problems when working
 with E3x, make sure to check the :ref:`Pitfalls` for common mistakes and sources
-of error.
+of error. More details on the mathematical theory behind E3x can be found in
+`this paper <https://arxiv.org/abs/2401.07595>`_.
+
+E3x is available on `github <https://github.com/google-research/e3x>`. To
+install E3x, simply run
+
+::
+
+  python -m pip install --upgrade e3x
+
 
 .. _Quickstart:
 
@@ -19,7 +28,6 @@ of error.
    :maxdepth: 1
    :caption: Quickstart
 
-   installation
    overview
    pitfalls
 
