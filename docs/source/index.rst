@@ -14,7 +14,7 @@ with E3x, make sure to check the :ref:`Pitfalls` for common mistakes and sources
 of error. More details on the mathematical theory behind E3x can be found in
 `this paper <https://arxiv.org/abs/2401.07595>`_.
 
-E3x is available on `github <https://github.com/google-research/e3x>`. To
+E3x is available on `github <https://github.com/google-research/e3x>`_. To
 install E3x, simply run
 
 ::
