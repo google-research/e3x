@@ -20,7 +20,8 @@ This is not an officially supported Google product.
 
 ## Installation
 
-The easiest way to install e3x is via the Python Package Index (PyPI). Simply run
+The easiest way to install E3x is via the Python Package Index (PyPI). Simply
+run
 ```console
 > python -m pip install --upgrade e3x
 ```
@@ -40,7 +41,10 @@ instead.
 
 ## Documentation
 
-Documentation for E3x, including usage examples and tutorials can be found [here](https://e3x.readthedocs.io). For a more detailed overview over the mathematical theory behind E3x, please refer to [this paper](https://arxiv.org/abs/2401.07595).
+Documentation for E3x, including usage examples and tutorials can be found
+[here](https://e3x.readthedocs.io). For a more detailed overview over the
+mathematical theory behind E3x, please refer to
+[this paper](https://arxiv.org/abs/2401.07595).
 
 ## Citing E3x
 
