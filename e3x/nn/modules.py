@@ -30,7 +30,6 @@ from e3x.config import Config
 from flax import linen as nn
 from flax.linen.dtypes import promote_dtype
 import jax
-from jax import lax
 import jax.numpy as jnp
 import jaxtyping
 
@@ -48,13 +47,7 @@ UInt32 = jaxtyping.UInt32
 Shape = Sequence[Union[int, Any]]
 Dtype = Any  # This could be a real type if support for that is added.
 PRNGKey = UInt32[Array, '2']
-PrecisionLike = Union[
-    None,
-    str,
-    lax.Precision,
-    Tuple[str, str],
-    Tuple[lax.Precision, lax.Precision],
-]
+PrecisionLike = jax.lax.PrecisionLike
 
 
 default_embed_init = jax.nn.initializers.variance_scaling(
