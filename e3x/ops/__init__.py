@@ -1,4 +1,4 @@
-# Copyright 2023 The e3x Authors.
+# Copyright 2024 The e3x Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,3 +32,4 @@ from .indexed import sparse_pairwise_indices
 from .indexed import sparse_to_dense_indices
 from .safe import norm
 from .safe import normalize
+from .safe import normalize_and_return_norm

@@ -1,4 +1,4 @@
-# Copyright 2023 The e3x Authors.
+# Copyright 2024 The e3x Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -84,6 +84,36 @@ def _norm_jvp_impl(
   return primal_out, tangent_out
 
 
+def normalize_and_return_norm(
+    x: Float[Array, '...'],
+    axis: Optional[Union[int, Tuple[int, ...]]] = None,
+    keepdims: bool = False,
+) -> Tuple[Float[Array, '...'], Float[Array, '...']]:
+  """Normalize x using the L2-norm along the specified axis and return its norm.
+
+  If x has a norm of almost zero, it is left unnormalized, because normalization
+  becomes numerically unstable.
+
+  Args:
+    x: Input array.
+    axis: Axis or axes along which the L2-norm is computed. The default,
+      axis=None, will compute the norm of all elements of the input array (as if
+      it was one large vector). If axis is negative it counts from the last to
+      the first axis.
+    keepdims: If this is set to True, the axes which are reduced for computing
+      the norm are left in the norm result as dimensions with size one.
+
+  Returns:
+    A tuple consisting of the normalized array and its norm.
+  """
+  n = norm(x, axis=axis, keepdims=True)
+  # If n * n is smaller than finfo.tiny, the gradient becomes unstable.
+  y = x / jnp.where(n * n > jnp.finfo(x.dtype).tiny, n, 1)
+  if not keepdims:
+    n = jnp.squeeze(n, axis=axis)
+  return y, n
+
+
 def normalize(
     x: Float[Array, '...'], axis: Optional[Union[int, Tuple[int, ...]]] = None
 ) -> Float[Array, '...']:
@@ -102,6 +132,5 @@ def normalize(
   Returns:
     The normalized array with the same shape as x.
   """
-  n = norm(x, axis=axis, keepdims=True)
-  # If n * n is smaller than finfo.tiny, the gradient becomes unstable.
-  return x / jnp.where(n * n > jnp.finfo(x.dtype).tiny, n, 1)
+  y, _ = normalize_and_return_norm(x, axis=axis, keepdims=True)
+  return y

@@ -1,4 +1,4 @@
-# Copyright 2023 The e3x Authors.
+# Copyright 2024 The e3x Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -128,11 +128,37 @@ def test_norm_has_nan_safe_derivatives(keepdims: bool) -> None:
     ],
 )
 @pytest.mark.parametrize('axis', [None, -1, (-1, -2)])
+@pytest.mark.parametrize('keepdims', [True, False])
+def test_normalize_and_return_norm(
+    x: Float[Array, '...'],
+    axis: Optional[Union[int, Tuple[int, ...]]],
+    keepdims: bool,
+) -> None:
+  y, n = e3x.ops.normalize_and_return_norm(x, axis=axis, keepdims=keepdims)
+  # Check that norm matches the result of jnp.linalg.norm.
+  reference_n = jnp.linalg.norm(x, axis=axis, keepdims=keepdims)
+  assert n.shape == reference_n.shape
+  assert jnp.allclose(n, reference_n, atol=1e-5)
+  # Check that output is normalized.
+  assert jnp.allclose(jnp.linalg.norm(y, axis=axis), 1.0, atol=1e-5)
+
+
+@pytest.mark.parametrize(
+    'x',
+    [
+        jnp.asarray([[0.8, 1.4, -0.7], [1.0, 1.0, 1.0]]),
+        jnp.asarray([
+            [[0.8, 1.4, -0.7], [1.0, 1.0, 1.0]],
+            [[1.0, 1.0, 1.0], [0.8, 1.4, -0.7]],
+        ]),
+    ],
+)
+@pytest.mark.parametrize('axis', [None, -1, (-1, -2)])
 def test_normalize(
     x: Float[Array, '...'], axis: Optional[Union[int, Tuple[int, ...]]]
 ) -> None:
-  n = e3x.ops.normalize(x, axis=axis)
-  assert jnp.allclose(jnp.linalg.norm(n, axis=axis), 1.0, atol=1e-5)
+  y = e3x.ops.normalize(x, axis=axis)
+  assert jnp.allclose(jnp.linalg.norm(y, axis=axis), 1.0, atol=1e-5)
 
 
 def test_normalize_has_nan_safe_derivatives() -> None:
