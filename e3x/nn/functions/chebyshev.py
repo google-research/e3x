@@ -127,6 +127,7 @@ def reciprocal_chebyshev(
     x: Float[Array, '...'],
     num: int,
     kind: mappings.ReciprocalMapping = 'shifted',
+    use_reciprocal_weighting: bool = False,
 ) -> Float[Array, '... num']:
   r"""Reciprocal Chebyshev polynomial basis functions.
 
@@ -140,7 +141,8 @@ def reciprocal_chebyshev(
 
   where :math:`k=0 \dots K-1` with :math:`K` = ``num``.
 
-  Plot for :math:`K = 5` (``kind = 'shifted'``):
+  Plot for :math:`K = 5` (``kind = 'shifted'``, ``use_reciprocal_weighting =
+  False``):
 
   .. jupyter-execute::
     :hide-code:
@@ -151,31 +153,78 @@ def reciprocal_chebyshev(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 10.0, num=1001); K = 5; l = 10.0
-    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='shifted')
+    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='shifted',
+    use_reciprocal_weighting=False)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_chebyshev}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` (``kind = 'damped'``):
+  Plot for :math:`K = 5` (``kind = 'shifted'``, ``use_reciprocal_weighting =
+  True``):
 
   .. jupyter-execute::
     :hide-code:
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='damped')
+    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='shifted',
+    use_reciprocal_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_chebyshev}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` (``kind = 'cuspless'``):
+  Plot for :math:`K = 5` (``kind = 'damped'``, ``use_reciprocal_weighting =
+  False``):
 
   .. jupyter-execute::
     :hide-code:
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='cuspless')
+    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='damped',
+    use_reciprocal_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_chebyshev}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'damped'``, ``use_reciprocal_weighting =
+  True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='damped',
+    use_reciprocal_weighting=True)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_chebyshev}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'cuspless'``, ``use_reciprocal_weighting =
+  False``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='cuspless',
+    use_reciprocal_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_chebyshev}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'cuspless'``, ``use_reciprocal_weighting =
+  True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_chebyshev(x, num=K, kind='cuspless',
+    use_reciprocal_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_chebyshev}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
@@ -185,12 +234,18 @@ def reciprocal_chebyshev(
     x: Input array.
     num: Number of basis functions :math:`K`.
     kind: Which kind of reciprocal mapping is used.
+    use_reciprocal_weighting: If ``True``, the functions are weighted by the
+      value of the reciprocal mapping.
 
   Returns:
     Value of all basis functions for all values in ``x``. The output shape
     follows the input, with an additional dimension of size ``num`` appended.
   """
-  return _chebyshev(2 * mappings.reciprocal_mapping(x, kind=kind) - 1, num=num)
+  mapping = mappings.reciprocal_mapping(x, kind=kind)
+  chebyshev = _chebyshev(2 * mapping - 1, num=num)
+  if use_reciprocal_weighting:
+    chebyshev *= jnp.expand_dims(mapping, axis=-1)
+  return chebyshev
 
 
 def exponential_chebyshev(
@@ -198,10 +253,11 @@ def exponential_chebyshev(
     num: int,
     gamma: Union[Float[Array, ''], float] = 1.0,
     cuspless: bool = False,
+    use_exponential_weighting: bool = False,
 ) -> Float[Array, '... num']:
   r"""Exponential Chebyshev polynomial basis functions.
 
-  Computes the basis functions (``cutoff = None``) (see
+  Computes the basis functions (see
   :func:`basic_chebyshev <e3x.nn.functions.chebyshev.basic_chebyshev>` and
   :func:`exponential_mapping <e3x.nn.functions.mappings.exponential_mapping>`)
 
@@ -209,9 +265,16 @@ def exponential_chebyshev(
     \mathrm{exponential\_chebyshev}_k(x) =
       \mathrm{chebyshev}_k(2\cdot\mathrm{exponential\_mapping}(x)-1)
 
+  or (if ``use_exponential_weighting = True``)
+
+  .. math::
+    \mathrm{exponential\_chebyshev}_k(x) = \mathrm{exponential\_mapping}(x)
+      \cdot \mathrm{chebyshev}_k(2\cdot\mathrm{exponential\_mapping}(x)-1)
+
   where :math:`k=0 \dots K-1` with :math:`K` = ``num``.
 
-  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``):
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``,
+  ``use_exponential_weighting = False``):
 
   .. jupyter-execute::
     :hide-code:
@@ -222,13 +285,15 @@ def exponential_chebyshev(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
-    y = e3x.nn.exponential_chebyshev(x, num=K, gamma=1, cuspless=False)
+    y = e3x.nn.exponential_chebyshev(x, num=K, gamma=1, cuspless=False,
+    use_exponential_weighting=False)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_chebyshev}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``):
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``,
+  ``use_exponential_weighting = True``):
 
   .. jupyter-execute::
     :hide-code:
@@ -236,7 +301,40 @@ def exponential_chebyshev(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
-    y = e3x.nn.exponential_chebyshev(x, num=K, gamma=1, cuspless=True)
+    y = e3x.nn.exponential_chebyshev(x, num=K, gamma=1, cuspless=False,
+    use_exponential_weighting=True)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_chebyshev}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``,
+  ``use_exponential_weighting = False``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
+    y = e3x.nn.exponential_chebyshev(x, num=K, gamma=1, cuspless=True,
+    use_exponential_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_chebyshev}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``,
+  ``use_exponential_weighting = True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
+    y = e3x.nn.exponential_chebyshev(x, num=K, gamma=1, cuspless=True,
+    use_exponential_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_chebyshev}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
@@ -247,11 +345,15 @@ def exponential_chebyshev(
     num: Number of basis functions :math:`K`.
     gamma: Exponential decay constant for the exponential mapping.
     cuspless: If ``True``, the returned functions are cuspless.
+    use_exponential_weighting: If ``True``, the functions are weighted by the
+      value of the exponential mapping.
 
   Returns:
     Value of all basis functions for all values in ``x``. The output shape
     follows the input, with an additional dimension of size ``num`` appended.
   """
-  return _chebyshev(
-      2 * mappings.exponential_mapping(x, gamma, cuspless=cuspless) - 1, num=num
-  )
+  mapping = mappings.exponential_mapping(x, gamma, cuspless=cuspless)
+  chebyshev = _chebyshev(2 * mapping - 1, num=num)
+  if use_exponential_weighting:
+    chebyshev *= jnp.expand_dims(mapping, axis=-1)
+  return chebyshev
