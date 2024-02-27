@@ -144,6 +144,7 @@ def reciprocal_fourier(
     x: Float[Array, '...'],
     num: int,
     kind: mappings.ReciprocalMapping = 'shifted',
+    use_reciprocal_weighting: bool = False,
 ) -> Float[Array, '... num']:
   r"""Reciprocal Fourier basis functions.
 
@@ -157,7 +158,8 @@ def reciprocal_fourier(
 
   where :math:`k=0 \dots K-1` with :math:`K` = ``num``.
 
-  Plot for :math:`K = 5` (``kind = 'shifted'``):
+  Plot for :math:`K = 5` (``kind = 'shifted'``, ``use_reciprocal_weighting =
+  False``):
 
   .. jupyter-execute::
     :hide-code:
@@ -168,31 +170,78 @@ def reciprocal_fourier(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 10.0, num=1001); K = 5; l = 10.0
-    y = e3x.nn.reciprocal_fourier(x, num=K, kind='shifted')
+    y = e3x.nn.reciprocal_fourier(x, num=K, kind='shifted',
+    use_reciprocal_weighting=False)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_fourier}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` (``kind = 'damped'``):
+  Plot for :math:`K = 5` (``kind = 'shifted'``, ``use_reciprocal_weighting =
+  True``):
 
   .. jupyter-execute::
     :hide-code:
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    y = e3x.nn.reciprocal_fourier(x, num=K, kind='damped')
+    y = e3x.nn.reciprocal_fourier(x, num=K, kind='shifted',
+    use_reciprocal_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_fourier}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` (``kind = 'cuspless'``):
+  Plot for :math:`K = 5` (``kind = 'damped'``, ``use_reciprocal_weighting =
+  False``):
 
   .. jupyter-execute::
     :hide-code:
 
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    y = e3x.nn.reciprocal_fourier(x, num=K, kind='cuspless')
+    y = e3x.nn.reciprocal_fourier(x, num=K, kind='damped',
+    use_reciprocal_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_fourier}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'damped'``, ``use_reciprocal_weighting =
+  True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_fourier(x, num=K, kind='damped',
+    use_reciprocal_weighting=True)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_fourier}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'cuspless'``, ``use_reciprocal_weighting =
+  False``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_fourier(x, num=K, kind='cuspless',
+    use_reciprocal_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_fourier}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'cuspless'``, ``use_reciprocal_weighting =
+  True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_fourier(x, num=K, kind='cuspless',
+    use_reciprocal_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_fourier}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
@@ -202,12 +251,18 @@ def reciprocal_fourier(
     x: Input array.
     num: Number of basis functions :math:`K`.
     kind: Which kind of reciprocal mapping is used.
+    use_reciprocal_weighting: If ``True``, the functions are weighted by the
+      value of the reciprocal mapping.
 
   Returns:
     Value of all basis functions for all values in ``x``. The output shape
     follows the input, with an additional dimension of size ``num`` appended.
   """
-  return _fourier(1 - mappings.reciprocal_mapping(x, kind=kind), num=num)
+  mapping = mappings.reciprocal_mapping(x, kind=kind)
+  fourier = _fourier(1 - mapping, num=num)
+  if use_reciprocal_weighting:
+    fourier *= jnp.expand_dims(mapping, axis=-1)
+  return fourier
 
 
 def exponential_fourier(
@@ -215,10 +270,11 @@ def exponential_fourier(
     num: int,
     gamma: Union[Float[Array, ''], float] = 1.0,
     cuspless: bool = False,
+    use_exponential_weighting: bool = False,
 ) -> Float[Array, '... num']:
   r"""Exponential Fourier basis functions.
 
-  Computes the basis functions (``cutoff = None``) (see
+  Computes the basis functions (see
   :func:`basic_fourier <e3x.nn.functions.trigonometric.basic_fourier>` and
   :func:`exponential_mapping <e3x.nn.functions.mappings.exponential_mapping>`)
 
@@ -226,9 +282,16 @@ def exponential_fourier(
     \mathrm{exponential\_fourier}_k(x) =
       \mathrm{fourier}_k(1-\mathrm{exponential\_mapping}(x))
 
+  or (if ``use_exponential_weighting = True``)
+
+  .. math::
+    \mathrm{exponential\_fourier}_k(x) = \mathrm{exponential\_mapping}(x)
+      \cdot \mathrm{fourier}_k(1-\mathrm{exponential\_mapping}(x))
+
   where :math:`k=0 \dots K-1` with :math:`K` = ``num``.
 
-  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``):
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``,
+  ``use_exponential_weighting = False``):
 
   .. jupyter-execute::
     :hide-code:
@@ -239,13 +302,15 @@ def exponential_fourier(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
-    y = e3x.nn.exponential_fourier(x, num=K, gamma=1, cuspless=False)
+    y = e3x.nn.exponential_fourier(x, num=K, gamma=1, cuspless=False,
+    use_exponential_weighting=False)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_fourier}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``):
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``,
+  ``use_exponential_weighting = True``):
 
   .. jupyter-execute::
     :hide-code:
@@ -253,7 +318,40 @@ def exponential_fourier(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
-    y = e3x.nn.exponential_fourier(x, num=K, gamma=1, cuspless=True)
+    y = e3x.nn.exponential_fourier(x, num=K, gamma=1, cuspless=False,
+    use_exponential_weighting=True)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_fourier}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``,
+  ``use_exponential_weighting = False``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
+    y = e3x.nn.exponential_fourier(x, num=K, gamma=1, cuspless=True,
+    use_exponential_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_fourier}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``,
+  ``use_exponential_weighting = True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
+    y = e3x.nn.exponential_fourier(x, num=K, gamma=1, cuspless=True,
+    use_exponential_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_fourier}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
@@ -264,11 +362,15 @@ def exponential_fourier(
     num: Number of basis functions :math:`K`.
     gamma: Exponential decay constant for the exponential mapping.
     cuspless: If ``True``, the returned functions are cuspless.
+    use_exponential_weighting: If ``True``, the functions are weighted by the
+      value of the exponential mapping.
 
   Returns:
     Value of all basis functions for all values in ``x``. The output shape
     follows the input, with an additional dimension of size ``num`` appended.
   """
-  return _fourier(
-      1 - mappings.exponential_mapping(x, gamma, cuspless=cuspless), num=num
-  )
+  mapping = mappings.exponential_mapping(x, gamma, cuspless=cuspless)
+  fourier = _fourier(1 - mapping, num=num)
+  if use_exponential_weighting:
+    fourier *= jnp.expand_dims(mapping, axis=-1)
+  return fourier

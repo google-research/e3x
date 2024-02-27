@@ -24,6 +24,7 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 ## [Unreleased]
 
 * Added e3x.ops.normalize_and_return_norm
+* Added option to include mapping as weighting in mapped functions
 
 ## [1.0.1] - 2024-01-17
 

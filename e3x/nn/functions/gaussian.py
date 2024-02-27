@@ -82,6 +82,7 @@ def reciprocal_gaussian(
     x: Float[Array, '...'],
     num: int,
     kind: mappings.ReciprocalMapping = 'shifted',
+    use_reciprocal_weighting: bool = False,
 ) -> Float[Array, '... num']:
   r"""Reciprocal Gaussian basis functions.
 
@@ -96,7 +97,8 @@ def reciprocal_gaussian(
 
   where :math:`k=0 \dots K-1` with :math:`K` = ``num``.
 
-  Plot for :math:`K = 5` (``kind = 'shifted'``):
+  Plot for :math:`K = 5` (``kind = 'shifted'``, ``use_reciprocal_weighting =
+  False``):
 
   .. jupyter-execute::
     :hide-code:
@@ -107,51 +109,105 @@ def reciprocal_gaussian(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 10.0, num=1001); K = 5; l = 10.0
-    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='shifted')
+    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='shifted',
+    use_reciprocal_weighting=False)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_gaussian}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` (``kind = 'damped'``):
+  Plot for :math:`K = 5` (``kind = 'shifted'``, ``use_reciprocal_weighting =
+  False``):
 
   .. jupyter-execute::
     :hide-code:
 
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='damped')
+    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='shifted',
+    use_reciprocal_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_gaussian}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` (``kind = 'cuspless'``):
+
+  Plot for :math:`K = 5` (``kind = 'damped'``, ``use_reciprocal_weighting =
+  False``):
 
   .. jupyter-execute::
     :hide-code:
 
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='cuspless')
+    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='damped',
+    use_reciprocal_weighting=False)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_gaussian}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
+  Plot for :math:`K = 5` (``kind = 'damped'``, ``use_reciprocal_weighting =
+  True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='damped',
+    use_reciprocal_weighting=True)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_gaussian}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'cuspless'``, ``use_reciprocal_weighting =
+  False``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='cuspless',
+    use_reciprocal_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_gaussian}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` (``kind = 'cuspless'``, ``use_reciprocal_weighting =
+  True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    y = e3x.nn.reciprocal_gaussian(x, num=K, kind='cuspless',
+    use_reciprocal_weighting=True)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{reciprocal\_gaussian}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
 
   Args:
     x: Input array.
     num: Number of basis functions :math:`K`.
     kind: Which kind of reciprocal mapping is used.
+    use_reciprocal_weighting: If ``True``, the functions are weighted by the
+      value of the reciprocal mapping.
 
   Returns:
     Value of all basis functions for all values in ``x``. The output shape
-    follows the input, with an additional dimension of size ``num`` appended. If
-    ``return_cutoff_value=True``, also returns the values of the cutoff function
-    with the same shape as ``x``.
+    follows the input, with an additional dimension of size ``num`` appended.
   """
-  return _gaussian(1 - mappings.reciprocal_mapping(x, kind=kind), num=num)
+  mapping = mappings.reciprocal_mapping(x, kind=kind)
+  gaussian = _gaussian(1 - mapping, num=num)
+  if use_reciprocal_weighting:
+    gaussian *= jnp.expand_dims(mapping, axis=-1)
+  return gaussian
 
 
 def exponential_gaussian(
@@ -159,6 +215,7 @@ def exponential_gaussian(
     num: int,
     gamma: Union[Float[Array, ''], float] = 1.0,
     cuspless: bool = False,
+    use_exponential_weighting: bool = False,
 ) -> Float[Array, '... num']:
   r"""Exponential Gaussian basis functions.
 
@@ -170,9 +227,17 @@ def exponential_gaussian(
     \mathrm{exponential\_gaussian}_k(x) =
       \mathrm{gaussian}_k(1-\mathrm{exponential\_mapping}(x))
 
+  or (if ``use_exponential_weighting = True``)
+
+  .. math::
+    \mathrm{exponential\_gaussian}_k(x) = \mathrm{exponential\_mapping}(x)
+      \cdot \mathrm{gaussian}_k(1-\mathrm{exponential\_mapping}(x))
+
+
   where :math:`k=0 \dots K-1` with :math:`K` = ``num``.
 
-  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``):
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``,
+  ``use_exponential_weighting = False``):
 
   .. jupyter-execute::
     :hide-code:
@@ -183,13 +248,15 @@ def exponential_gaussian(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
-    y = e3x.nn.exponential_gaussian(x, num=K, gamma=1, cuspless=False)
+    y = e3x.nn.exponential_gaussian(x, num=K, gamma=1, cuspless=False,
+    use_exponential_weighting=False)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_gaussian}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
     plt.legend(); plt.grid()
 
-  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``):
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = False``,
+  ``use_exponential_weighting = True``):
 
   .. jupyter-execute::
     :hide-code:
@@ -197,7 +264,40 @@ def exponential_gaussian(
     inl.set_matplotlib_formats('pdf', 'svg')
     plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
     x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
-    y = e3x.nn.exponential_gaussian(x, num=K, gamma=1, cuspless=True)
+    y = e3x.nn.exponential_gaussian(x, num=K, gamma=1, cuspless=False,
+    use_exponential_weighting=True)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_gaussian}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``,
+  ``use_exponential_weighting = False``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
+    y = e3x.nn.exponential_gaussian(x, num=K, gamma=1, cuspless=True,
+    use_exponential_weighting=False)
+    plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_gaussian}_k(x)$')
+    for k in range(K):
+      plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
+    plt.legend(); plt.grid()
+
+  Plot for :math:`K = 5` and :math:`\gamma = 1` (``cuspless = True``,
+  ``use_exponential_weighting = True``):
+
+  .. jupyter-execute::
+    :hide-code:
+
+    inl.set_matplotlib_formats('pdf', 'svg')
+    plt.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    x = np.linspace(0, 5.0, num=1001); K = 5; l = 5.0
+    y = e3x.nn.exponential_gaussian(x, num=K, gamma=1, cuspless=True,
+    use_exponential_weighting=True)
     plt.xlabel(r'$x$'); plt.ylabel(r'$\mathrm{exponential\_gaussian}_k(x)$')
     for k in range(K):
       plt.plot(x, y[:,k], lw=3, label=r'$k$'+f'={k}')
@@ -208,11 +308,15 @@ def exponential_gaussian(
     num: Number of basis functions :math:`K`.
     gamma: Exponential decay constant for the exponential mapping.
     cuspless: If ``True``, the returned functions are cuspless.
+    use_exponential_weighting: If ``True``, the functions are weighted by the
+      value of the exponential mapping.
 
   Returns:
     Value of all basis functions for all values in ``x``. The output shape
     follows the input, with an additional dimension of size ``num`` appended.
   """
-  return _gaussian(
-      1 - mappings.exponential_mapping(x, gamma, cuspless=cuspless), num=num
-  )
+  mapping = mappings.exponential_mapping(x, gamma, cuspless=cuspless)
+  gaussian = _gaussian(1 - mapping, num=num)
+  if use_exponential_weighting:
+    gaussian *= jnp.expand_dims(mapping, axis=-1)
+  return gaussian
