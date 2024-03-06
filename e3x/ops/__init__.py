@@ -15,11 +15,13 @@
 r"""Custom basic operations used in e3x.
 
 Operations defined in this submodule either simplify working with index lists,
-or are numerically safe alternatives to standard operations.
+parameter initialization, or are numerically safe alternatives to standard
+operations.
 """
 
 
 from .helpers import evaluate_derivatives
+from .helpers import inverse_softplus
 from .indexed import dense_pairwise_indices
 from .indexed import dense_to_sparse_indices
 from .indexed import gather_dst

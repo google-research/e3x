@@ -20,7 +20,13 @@ import jax.numpy as jnp
 import jaxtyping
 
 Array = jaxtyping.Array
+Float = jaxtyping.Float
 Num = jaxtyping.Num
+
+
+def inverse_softplus(x: Float[Array, '...']) -> Float[Array, '...']:
+  """Inverse of the softplus function (useful for parameter initialization)."""
+  return x + jnp.log(-jnp.expm1(-x))
 
 
 def evaluate_derivatives(

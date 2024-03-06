@@ -71,3 +71,4 @@ from .modules import SelfAttention
 from .modules import Tensor
 from .modules import TensorDense
 from .wrappers import basis
+from .wrappers import ExponentialBasis

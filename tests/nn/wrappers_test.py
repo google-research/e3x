@@ -17,6 +17,7 @@ import math
 import re
 from typing import Callable
 import e3x
+import jax
 import jax.numpy as jnp
 import jaxtyping
 import pytest
@@ -202,4 +203,48 @@ def test_basis_raises_when_cutoff_cannot_be_returned() -> None:
         num=0,
         radial_fn=lambda x, n: x,
         return_cutoff=True,
+    )
+
+
+@pytest.mark.parametrize('gamma', [0.5, 1.0, 2.0])
+@pytest.mark.parametrize('max_degree', [0, 1])
+@pytest.mark.parametrize('num', [8, 16])
+@pytest.mark.parametrize(
+    'radial_fn', [e3x.nn.exponential_bernstein, e3x.nn.exponential_gaussian]
+)
+def test_exponential_basis_is_equivalent_to_direct_call(
+    gamma: float,
+    max_degree: int,
+    num: int,
+    radial_fn: Callable[[Float[Array, '...'], int], Float[Array, '... N']],
+) -> None:
+  r = jnp.array([[0.1, 0.1, -0.2], [1.0, 0.5, -3.0], [-1.0, 2.0, 0.0]])
+  direct_call = e3x.nn.basis(
+      r,
+      max_degree=max_degree,
+      num=num,
+      radial_fn=functools.partial(radial_fn, gamma=gamma),
+  )
+  wrapper, _ = e3x.nn.ExponentialBasis(initial_gamma=gamma).init_with_output(
+      jax.random.PRNGKey(0),
+      r,
+      max_degree=max_degree,
+      num=num,
+      radial_fn=radial_fn,
+  )
+  assert jnp.allclose(direct_call, wrapper)
+
+
+def test_exponential_basis_raises_with_non_exponentially_mapped_radial_fn(
+    constant_radial_fn: Callable[
+        [Float[Array, '...'], int], Float[Array, '... N']
+    ],
+) -> None:
+  with pytest.raises(TypeError, match='unexpected keyword'):
+    e3x.nn.ExponentialBasis().init_with_output(
+        jax.random.PRNGKey(0),
+        jnp.array([[1.0, 0.0, 0.0]]),
+        max_degree=0,
+        num=4,
+        radial_fn=constant_radial_fn,
     )
