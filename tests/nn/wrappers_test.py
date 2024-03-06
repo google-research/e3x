@@ -137,6 +137,38 @@ def test_basis_with_cutoff_fn() -> None:
   assert jnp.allclose(basis[..., 0, 0, 0], expected, atol=1e-5)
 
 
+def test_basis_with_cutoff_fn_and_return_norm() -> None:
+  radial_fn = lambda x, n: jnp.repeat(jnp.ones_like(x)[..., None], n, axis=-1)
+  cutoff_fn = lambda x: jnp.where(x < 1.0, 1.0 - x, 0.0)
+  r = jnp.asarray([[0.5, 0.0, 0.0], [2.0, 0.0, 0.0]])
+  basis, cutoff, norm = e3x.nn.basis(
+      r=r,
+      max_degree=0,
+      num=1,
+      radial_fn=radial_fn,
+      cutoff_fn=cutoff_fn,
+      return_cutoff=True,
+      return_norm=True,
+  )
+  expected = jnp.asarray([0.5, 0.0])
+  assert jnp.allclose(cutoff, expected, atol=1e-5)
+  assert jnp.allclose(basis[..., 0, 0, 0], expected, atol=1e-5)
+  assert jnp.allclose(norm, jnp.array([0.5, 2.0]), atol=1e-5)
+
+
+def test_basis_with_return_norm() -> None:
+  radial_fn = lambda x, n: jnp.repeat(jnp.ones_like(x)[..., None], n, axis=-1)
+  r = jnp.asarray([[0.5, 0.0, 0.0], [2.0, 0.0, 0.0]])
+  _, norm = e3x.nn.basis(
+      r=r,
+      max_degree=0,
+      num=1,
+      radial_fn=radial_fn,
+      return_norm=True,
+  )
+  assert jnp.allclose(norm, jnp.array([0.5, 2.0]), atol=1e-5)
+
+
 def test_basis_with_damping_fn() -> None:
   radial_fn = lambda x, n: jnp.repeat(jnp.ones_like(x)[..., None], n, axis=-1)
   damping_fn = lambda x: jnp.where(x < 1.0, 0.0, 1.0)

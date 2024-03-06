@@ -42,6 +42,7 @@ class AngularFn(Protocol):
 
 def basis(
     r: Float[Array, '... 3'],
+    *,
     max_degree: int,
     num: int,
     radial_fn: Callable[[Float[Array, '...'], int], Float[Array, '... num']],
@@ -50,6 +51,7 @@ def basis(
         Callable[[Float[Array, '...']], Float[Array, '...']]
     ] = None,
     return_cutoff: bool = False,
+    return_norm: bool = False,
     damping_fn: Optional[
         Callable[[Float[Array, '...']], Float[Array, '...']]
     ] = None,
@@ -57,6 +59,11 @@ def basis(
 ) -> Union[
     Float[Array, '... 1 (max_degree+1)**2 num'],
     Tuple[Float[Array, '... 1 (max_degree+1)**2 num'], Float[Array, '...']],
+    Tuple[
+        Float[Array, '... 1 (max_degree+1)**2 num'],
+        Float[Array, '...'],
+        Float[Array, '...'],
+    ],
 ]:
   r"""Convenience wrapper for computing radial-angular basis functions.
 
@@ -143,6 +150,7 @@ def basis(
       should take an array of shape ``(...)`` (the norm of ``r``) as input and
       return an array of shape ``(...)`` (the values of the cutoff function).
     return_cutoff: If ``True``, also return the values of the cutoff function.
+    return_norm: If ``True``, also return the norm of the input vectors ``r``.
     damping_fn: Optional Callable for computing damping values. This function
       should take an array of shape ``(...)`` (the norm of ``r``) as input and
       return an array of shape ``(...)`` (the values of the damping function).
@@ -154,9 +162,10 @@ def basis(
     Value of all basis functions for all values in ``r``. If the input has shape
     ``(..., 3)``, the output has shape ``(..., 1, (max_degree+1)**2, num)`` (the
     ``1`` in the shape is a parity axis added for compatibility with other
-    methods). If ``return_cutoff_value=True``, also returns the values of the
-    cutoff function shape as ``(...)`` (a tuple of basis function values and
-    cutoff values is returned).
+    methods). If ``return_cutoff_value=True``, or ``return_norm=True``, also
+    returns the values of the cutoff function/vector norms  with shape ``(...)``
+    (a tuple of basis function values and cutoff values and/or norms is
+    returned).
   """
   # Check that r is a collection of 3-vectors.
   if r.shape[-1] != 3:
@@ -202,7 +211,11 @@ def basis(
   # Add parity axis.
   out = jnp.expand_dims(out, axis=-3)  # (..., 1, (L+1)**2, N)
 
-  if return_cutoff and cutoff_fn is not None:
-    return out, cut
-  else:
-    return out
+  # Add optional return values.
+  if (return_cutoff and cutoff_fn is not None) or return_norm:
+    out = (out,)
+    if return_cutoff and cutoff_fn is not None:
+      out += (cut,)
+    if return_norm:
+      out += (norm,)
+  return out
