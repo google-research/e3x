@@ -13,8 +13,18 @@
 # limitations under the License.
 
 import e3x
+import jax
 import jax.numpy as jnp
+import jaxtyping
 import pytest
+
+Array = jaxtyping.Array
+Float = jaxtyping.Float
+
+
+@pytest.mark.parametrize('x', [jnp.array(4.0), jnp.array([1.0, 2.0, 0.5])])
+def test_inverse_softplus(x: Float[Array, '...']) -> None:
+  assert jnp.allclose(x, jax.nn.softplus(e3x.ops.inverse_softplus(x)))
 
 
 def test_evaluate_derivatives() -> None:

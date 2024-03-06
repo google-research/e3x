@@ -15,15 +15,18 @@
 r"""Convenience wrappers to simplify usage of other functions."""
 
 import functools
-from typing import Callable, Optional, Protocol, Tuple, Union
+from typing import Any, Callable, Optional, Protocol, Tuple, Union
 from e3x import config
 from e3x import ops
 from e3x import so3
+from flax import linen as nn
+import jax
 import jax.numpy as jnp
 import jaxtyping
 
 Array = jaxtyping.Array
 Float = jaxtyping.Float
+Dtype = Any  # This could be a real type if support for that is added.
 
 
 _default_angular_fn = functools.partial(
@@ -219,3 +222,30 @@ def basis(
     if return_norm:
       out += (norm,)
   return out
+
+
+class ExponentialBasis(nn.Module):
+  """Exponential basis module.
+
+  This module wraps :func:`basis <e3x.nn.wrappers.basis>` and injects a
+  learnable `gamma` parameter into the provided `radial_fn`. Only works with
+  radial functions that accept a `gamma` keyword (all exponentially mapped
+  radial functions).
+  """
+
+  initial_gamma: float = 1.0
+  param_dtype: Dtype = jnp.float32
+
+  @nn.compact
+  def __call__(self, *args, **kwargs):
+    gamma = jax.nn.softplus(
+        self.param(
+            'gamma',
+            lambda _, dtype: ops.inverse_softplus(  # PRNGKey is unused.
+                jnp.array(self.initial_gamma, dtype=dtype)
+            ),
+            self.param_dtype,
+        )
+    )
+    kwargs['radial_fn'] = functools.partial(kwargs['radial_fn'], gamma=gamma)
+    return basis(*args, **kwargs)
