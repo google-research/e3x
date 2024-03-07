@@ -36,7 +36,9 @@ def _gaussian(x: Float[Array, '...'], num: int) -> Float[Array, '... num']:
 
 
 def basic_gaussian(
-    x: Float[Array, '...'], num: int, limit: float = 1.0
+    x: Float[Array, '...'],
+    num: int,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Basic Gaussian basis functions.
 

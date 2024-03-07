@@ -14,6 +14,7 @@
 
 """Window functions."""
 
+from typing import Union
 from e3x.nn.functions import smooth_switch
 import jax
 import jax.numpy as jnp
@@ -26,7 +27,7 @@ Float = jaxtyping.Float
 def rectangular_window(
     x: Float[Array, '...'],
     num: int,
-    limit: float = 1.0,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Rectangular window basis functions.
 
@@ -82,7 +83,7 @@ def rectangular_window(
 def triangular_window(
     x: Float[Array, '...'],
     num: int,
-    limit: float = 1.0,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Triangular window basis functions.
 
@@ -133,7 +134,7 @@ def triangular_window(
 def smooth_window(
     x: Float[Array, '...'],
     num: int,
-    limit: float = 1.0,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Smooth window basis functions.
 

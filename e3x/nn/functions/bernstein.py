@@ -88,7 +88,7 @@ def _bernstein_jvp_impl(
 def basic_bernstein(
     x: Float[Array, '...'],
     num: int,
-    limit: float = 1.0,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Basic Bernstein polynomial basis functions.
 

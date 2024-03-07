@@ -18,6 +18,7 @@ Functions that gradually go from :math:`1` (at :math:`x=0`) to :math:`0` (at
 :math:`x=x_{\rm cutoff}`).
 """
 
+from typing import Union
 import jax.numpy as jnp
 import jaxtyping
 
@@ -27,7 +28,7 @@ Float = jaxtyping.Float
 
 def smooth_cutoff(
     x: Float[Array, '...'],
-    cutoff: float = 1.0,
+    cutoff: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '...']:
   r"""Smooth cutoff function.
 
@@ -79,7 +80,7 @@ def smooth_cutoff(
 
 def cosine_cutoff(
     x: Float[Array, '...'],
-    cutoff: float = 1.0,
+    cutoff: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '...']:
   r"""Cosine cutoff function.
 

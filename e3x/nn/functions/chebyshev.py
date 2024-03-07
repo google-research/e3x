@@ -67,7 +67,7 @@ def _chebyshev(
 def basic_chebyshev(
     x: Float[Array, '...'],
     num: int,
-    limit: float = 1.0,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Basic Chebyshev polynomial basis functions.
 

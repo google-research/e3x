@@ -28,7 +28,7 @@ Float = jaxtyping.Float
 def sinc(
     x: Float[Array, '...'],
     num: int,
-    limit: float = 1.0,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Sinc basis functions.
 
@@ -98,7 +98,7 @@ def _fourier(
 def basic_fourier(
     x: Float[Array, '...'],
     num: int,
-    limit: float = 1.0,
+    limit: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '... num']:
   r"""Fourier basis functions.
 

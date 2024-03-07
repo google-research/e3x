@@ -20,7 +20,7 @@ interpolate between :math:`0` and :math:`1` on the interval :math:`[a,b]`.
 
 import functools
 import math
-from typing import Any, Tuple
+from typing import Any, Tuple, Union
 import jax
 import jax.numpy as jnp
 import jaxtyping
@@ -40,8 +40,8 @@ def _smooth_switch_exp(x: Float[Array, '...']) -> Float[Array, '...']:
 @functools.partial(jax.custom_jvp, nondiff_argnums=(1, 2))
 def smooth_switch(
     x: Float[Array, '...'],
-    x0: float = 0.0,
-    x1: float = 1.0,
+    x0: Union[Float[Array, ''], float] = 0.0,
+    x1: Union[Float[Array, ''], float] = 1.0,
 ) -> Float[Array, '...']:
   r"""Smooth switch function.
 
@@ -107,7 +107,10 @@ def smooth_switch(
 
 @smooth_switch.defjvp
 def _smooth_switch_jvp_impl(
-    x0: float, x1: float, primals: Any, tangents: Any
+    x0: Union[Float[Array, ''], float],
+    x1: Union[Float[Array, ''], float],
+    primals: Any,
+    tangents: Any,
 ) -> Tuple[Any, Any]:
   """JVP implementation for smooth_switch."""
   (x,) = primals
