@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
+from typing import Callable, Optional
 import e3x
 import jax.numpy as jnp
+import jaxtyping
 import pytest
+
+Array = jaxtyping.Array
+Float = jaxtyping.Float
 
 
 # For reference of available Lebedev rules, see:
@@ -49,19 +53,35 @@ import pytest
         (None, 10000, 5810),
     ],
 )
-def test_lebedev_quadrature_loading(
+def test__load_grid(
     precision: Optional[int], num: Optional[int], expected_size: int
 ) -> None:
-  _, w = e3x.so3.lebedev_quadrature(precision=precision, num=num)
+  _, w = e3x.so3.quadrature._load_grid(
+      kind='Lebedev', precision=precision, num=num
+  )
   assert w.size == expected_size
 
 
+def test__load_grid_raises_with_invalid_kind() -> None:
+  with pytest.raises(ValueError, match="kind='Foo' does not exist"):
+    e3x.so3.quadrature._load_grid(kind='Foo')  # type: ignore
+
+
+@pytest.mark.parametrize(
+    'quadrature', [e3x.so3.lebedev_quadrature, e3x.so3.delley_quadrature]
+)
 @pytest.mark.parametrize('precision', list(range(0, 132)))
-def test_lebedev_quadrature(precision: int) -> None:
+def test_quadrature(
+    quadrature: Callable[
+        [Optional[int], Optional[int]],
+        tuple[Float[Array, 'num_points 3'], Float[Array, 'num_points']],
+    ],
+    precision: int,
+) -> None:
   # The spherical harmonics are orthonormalized, so we can test whether the
   # quadrature rules work as expected by checking their orthonormalization.
 
-  r, w = e3x.so3.lebedev_quadrature(precision=precision)
+  r, w = quadrature(precision, None)
   ylm = e3x.so3.spherical_harmonics(
       r,
       max_degree=min(precision // 2, 15),
@@ -72,6 +92,9 @@ def test_lebedev_quadrature(precision: int) -> None:
   assert jnp.allclose(eye, jnp.eye(ylm.shape[-1]), atol=1e-5)
 
 
+@pytest.mark.parametrize(
+    'quadrature', [e3x.so3.lebedev_quadrature, e3x.so3.delley_quadrature]
+)
 @pytest.mark.parametrize(
     'precision, num, message',
     [
@@ -87,8 +110,14 @@ def test_lebedev_quadrature(precision: int) -> None:
         ),
     ],
 )
-def test_lebedev_quadrature_raises_with_invalid_inputs(
-    precision: Optional[int], num: Optional[int], message: str
+def test_quadrature_raises_with_invalid_inputs(
+    quadrature: Callable[
+        [Optional[int], Optional[int]],
+        tuple[Float[Array, 'num_points 3'], Float[Array, 'num_points']],
+    ],
+    precision: Optional[int],
+    num: Optional[int],
+    message: str,
 ) -> None:
   with pytest.raises(ValueError, match=message):
-    e3x.so3.lebedev_quadrature(precision=precision, num=num)
+    quadrature(precision, num)

@@ -23,11 +23,16 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 ## [Unreleased]
 
+
+
+## [1.0.2] - 2024-04-05
+
 * Added e3x.ops.normalize_and_return_norm
 * Added option to include mapping as weighting in mapped functions
 * Added option to return vector norms to e3x.nn.basis
 * Added e3x.nn.ExponentialBasis (wraps e3x.nn.basis, injecting learnable gamma)
 * Added e3x.ops.inverse_softplus helper function
+* Added e3x.so3.delley_quadrature for computing Delley quadratures of S2
 
 ## [1.0.1] - 2024-01-17
 
@@ -37,6 +42,7 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 
 * Initial release
 
-[Unreleased]: https://github.com/google-research/e3x/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/google-research/e3x/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/google-research/e3x/releases/tag/v1.0.2
 [1.0.1]: https://github.com/google-research/e3x/releases/tag/v1.0.1
 [1.0.0]: https://github.com/google-research/e3x/releases/tag/v1.0.0

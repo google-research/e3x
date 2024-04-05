@@ -23,6 +23,7 @@ from .irreps import Normalization
 from .irreps import solid_harmonics
 from .irreps import spherical_harmonics
 from .irreps import tensor_to_irreps
+from .quadrature import delley_quadrature
 from .quadrature import lebedev_quadrature
 from .rotations import alignment_rotation
 from .rotations import euler_angles_from_rotation
