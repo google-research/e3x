@@ -178,7 +178,7 @@ def _random_array(
       return stddev * _complex_truncated_normal(
           key=key,
           upper=2,
-          shape=jax.core.as_named_shape(shape),
+          shape=shape,
           dtype=dtype,
       )
   elif distribution == 'normal':
@@ -192,7 +192,7 @@ def _random_array(
       )
     else:
       return jnp.sqrt(variance) * _complex_uniform(
-          key=key, shape=jax.core.as_named_shape(shape), dtype=dtype
+          key=key, shape=shape, dtype=dtype
       )
   else:
     raise ValueError(f"invalid distribution '{distribution}' for _random_array")
