@@ -22,8 +22,7 @@ To release a new version (e.g. from `1.0.0` -> `2.0.0`):
 -->
 
 ## [Unreleased]
-
-
+* Added support for matrix irreps
 
 ## [1.0.2] - 2024-04-05
 

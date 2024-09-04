@@ -12,18 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""e3x API.
-
-All functions and classes from the :obj:`nn <e3x.nn>`, :obj:`ops <e3x.ops>`, and
-:obj:`so3 <e3x.so3>` submodules can be used without specifying their full path
-within each submodule (to prevent extremely long names). For example,
-``e3x.nn.relu`` is equivalent to ``e3x.nn.activations.relu``.
-"""
+r"""Components for building matrix-based equivariant models."""
 
 
-from . import matrix
-from . import nn
-from . import ops
-from . import so3
-from .config import Config
-from .version import __version__
+
+from .matmat import init_matrix_irreps_weights
+from .matmat import make_square_matrix
