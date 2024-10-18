@@ -6,7 +6,7 @@
 
 ![Autopublish Workflow](https://github.com/google-research/e3x/actions/workflows/pytest_and_autopublish.yml/badge.svg)
 ![PyPI version](https://img.shields.io/pypi/v/e3x)
-[![Documentation Status](https://readthedocs.org/projects/e3x/badge/?version=latest)](https://e3x.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/e3x/badge/?version=stable)](https://e3x.readthedocs.io/stable/?badge=stable)
 
 [E3x](https://e3x.readthedocs.io) is a [JAX](https://jax.readthedocs.io) library
 for constructing efficient E(3)-equivariant deep learning architectures built on
