@@ -82,7 +82,7 @@ def spherical_harmonics(
     \Pi_{\ell}^{m}(z) = \sqrt{\frac{(\ell-m)!}{(\ell+m)!}}
       \sum_{k=0}^{\lfloor(\ell-m)/2\rfloor} \ \frac{(-1)^k}{2^\ell}
       \binom{\ell}{k} \binom{2\ell-2k}{\ell}\frac{(\ell-2k)!}{(\ell-2k-m)!}
-      r^{2k-\ell}z^{\ell-2k-m}
+      r^{2k}z^{\ell-2k-m}
 
   with :math:`\vec{r}=[x\ y\ z]^\intercal \in \mathbb{R}^3` and
   :math:`r = \lVert \vec{r} \rVert`. Here, :math:`\mathcal{N}` is a
