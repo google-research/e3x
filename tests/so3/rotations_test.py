@@ -403,7 +403,7 @@ def test_euler_angles_from_rotation(
     ],
 )
 def test_euler_angles_from_rotation_when_degenerate(
-    expected_rot: Float[Array, '3 3']
+    expected_rot: Float[Array, '3 3'],
 ) -> None:
   a, b, c = e3x.so3.euler_angles_from_rotation(expected_rot)
   rot = e3x.so3.rotation_euler(a=a, b=b, c=c)
@@ -430,6 +430,11 @@ def test_random_rotation_has_determinant_1(seed: int) -> None:
 def test_random_rotation_is_orthogonal(seed: int) -> None:
   rot = e3x.so3.random_rotation(jax.random.PRNGKey(seed))
   assert jnp.allclose(rot @ jnp.swapaxes(rot, -1, -2), jnp.eye(3), atol=1e-5)
+
+
+def test_random_rotation_is_jittable() -> None:
+  jitted_random_rotation = jax.jit(e3x.so3.random_rotation)
+  jitted_random_rotation(jax.random.PRNGKey(0), jnp.array(1.0))
 
 
 @pytest.mark.parametrize('max_degree', [0, 1, 2, 3])

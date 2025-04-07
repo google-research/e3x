@@ -202,7 +202,7 @@ def rotation_euler(
 
 
 def euler_angles_from_rotation(
-    rot: Float[Array, '... 3 3']
+    rot: Float[Array, '... 3 3'],
 ) -> Tuple[Float[Array, '...'], Float[Array, '...'], Float[Array, '...']]:
   r"""Extracts Euler angles from a rotation matrix.
 
@@ -250,7 +250,7 @@ def euler_angles_from_rotation(
 
 def random_rotation(
     key: PRNGKey,
-    perturbation: float = 1.0,
+    perturbation: Union[float, Float[Array, '']] = 1.0,
     num: int = 1,  # When num=1, leading dimension is automatically squeezed.
 ) -> Union[Float[Array, '3 3'], Float[Array, 'num 3 3']]:
   r"""Samples a random :math:`3\times3` rotation matrix.
@@ -279,17 +279,15 @@ def random_rotation(
   Args:
     key: A PRNG key used as the random key.
     perturbation: A value between 0.0 and 1.0 that determines the perturbation.
+      Values outside the valid range are clamped.
     num: Number of returned rotation matrices.
 
   Returns:
     An Array of shape :math:`(\mathrm{num}, 3, 3)` or :math:`(3, 3)` (if num =
     1) representing random :math:`3\times3` rotation matrices.
   """
-  # Check that perturbation is a meaningful value.
-  if not 0.0 <= perturbation <= 1.0:
-    raise ValueError(
-        f'perturbation must be between 0.0 and 1.0, received {perturbation}'
-    )
+  # Clamp perturbation to a meaningful range.
+  perturbation = jax.lax.clamp(0.0, perturbation, 1.0)
   # Draw random numbers and transform them.
   twopi = 2 * jnp.pi
   u = jax.random.uniform(key, shape=(num, 3))
