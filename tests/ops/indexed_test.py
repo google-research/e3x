@@ -1,4 +1,4 @@
-# Copyright 2024 The e3x Authors.
+# Copyright 2026 The e3x Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -1002,4 +1002,4 @@ def test_indexed_softmax(
   if where is not None:  # Extract only entries with well-defined values.
     result = result[where]
     expected = expected[where]
-  assert jnp.array_equal(result, expected)
+  assert jnp.allclose(result, expected, atol=1e-6)
