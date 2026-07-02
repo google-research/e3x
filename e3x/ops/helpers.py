@@ -53,8 +53,8 @@ def evaluate_derivatives(
     return lambda x: jax.jvp(f, (x,), (jnp.ones_like(x),))[1]
 
   y = [None] * (max_order + 1)
-  y[0] = f(x)
+  y[0] = f(x)  # pyrefly: ignore[unsupported-operation]
   for i in range(max_order):
     f = derivative(f)  # Using a lambda directly here raises RecursionError.
     y[i + 1] = f(x)
-  return y
+  return y  # pyrefly: ignore[bad-return]

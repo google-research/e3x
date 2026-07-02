@@ -20,7 +20,7 @@ from typing import Literal
 
 valid_normalizations = ('4pi', 'orthonormal', 'racah', 'schmidt')
 
-Normalization = Literal[valid_normalizations]
+Normalization = Literal[valid_normalizations]  # pyrefly: ignore[not-a-type]
 
 
 def check_normalization_is_valid(normalization: Normalization) -> None:

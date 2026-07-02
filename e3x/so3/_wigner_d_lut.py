@@ -78,8 +78,8 @@ def _generate_wigner_d_lookup_table(
     num_wig = _total_number_of_wigner_d_entries(max_degree)
     return WignerDLookupTable(
         max_degree=max_degree,
-        cm=np.zeros((num_rot, num_wig), dtype=np.float64),
-        ls=np.zeros((num_rot, 9), dtype=np.int64),
+        cm=np.zeros((num_rot, num_wig), dtype=np.float64),  # pyrefly: ignore[bad-argument-type]
+        ls=np.zeros((num_rot, 9), dtype=np.int64),  # pyrefly: ignore[bad-argument-type]
     )
 
   def _load_from_cache(
@@ -114,10 +114,10 @@ def _generate_wigner_d_lookup_table(
       nwig = _number_of_wigner_d_entries_of_degree(l)
       cm = lookup_table['cm'][irot : irot + nrot, iwig : iwig + nwig]
       i0, i1 = np.nonzero(cm)
-      cache[f'cm{l}'] = cm[i0, i1]
-      cache[f'i0{l}'] = i0
-      cache[f'i1{l}'] = i1
-      cache[f'ls{l}'] = lookup_table['ls'][irot : irot + nrot]
+      cache[f'cm{l}'] = cm[i0, i1]  # pyrefly: ignore[bad-assignment]
+      cache[f'i0{l}'] = i0  # pyrefly: ignore[bad-assignment]
+      cache[f'i1{l}'] = i1  # pyrefly: ignore[bad-assignment]
+      cache[f'ls{l}'] = lookup_table['ls'][irot : irot + nrot]  # pyrefly: ignore[bad-assignment]
       irot += nrot
       iwig += nwig
     return cache
@@ -126,10 +126,10 @@ def _generate_wigner_d_lookup_table(
   cached_max_degree, lookup_table = _load_lookup_table_from_disk(
       max_degree=max_degree,
       lookup_table_name=_wigner_d_lut_name,
-      config_cache_path=Config.wigner_d_cache,
+      config_cache_path=Config.wigner_d_cache,  # pyrefly: ignore[bad-argument-type]
       package_cache_path=_wigner_d_lut_path,
-      load_from_cache=_load_from_cache,
-      init_empty_lookup_table=_init_empty_lookup_table,
+      load_from_cache=_load_from_cache,  # pyrefly: ignore[bad-argument-type]
+      init_empty_lookup_table=_init_empty_lookup_table,  # pyrefly: ignore[bad-argument-type]
   )
   lookup_table = cast(WignerDLookupTable, lookup_table)
 
@@ -210,7 +210,7 @@ def _generate_wigner_d_lookup_table(
   _save_lookup_table_to_disk(
       lookup_table=_compress(lookup_table),
       lookup_table_name=_wigner_d_lut_name,
-      config_cache_path=Config.wigner_d_cache,
+      config_cache_path=Config.wigner_d_cache,  # pyrefly: ignore[bad-argument-type]
   )
 
   return lookup_table

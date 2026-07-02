@@ -145,11 +145,11 @@ def create_dummy_lut(tmp_path: pathlib.Path):
 
 def test_generate_lookup_table(max_degree: int = 2) -> None:
   lut = _generate_clebsch_gordan_lookup_table(max_degree)
-  assert_lut_is_correct(lut)
+  assert_lut_is_correct(lut)  # pyrefly: ignore[bad-argument-type]
 
 
 def test_incremental_generation(max_degree: int = 2) -> None:
   lut = None
   for l in range(max_degree + 1):
     lut = _generate_clebsch_gordan_lookup_table(l)
-  assert_lut_is_correct(lut)
+  assert_lut_is_correct(lut)  # pyrefly: ignore[bad-argument-type]

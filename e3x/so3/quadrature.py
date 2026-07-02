@@ -44,7 +44,7 @@ def _load_grid(
     )
 
   try:
-    f = io.BytesIO(pkgutil.get_data(__name__, f'_{kind.lower()}_grids.npz'))
+    f = io.BytesIO(pkgutil.get_data(__name__, f'_{kind.lower()}_grids.npz'))  # pyrefly: ignore[bad-argument-type]
     with np.load(f) as quadrature_grids:
       if precision is not None:
         available_precisions = quadrature_grids['precision']
@@ -81,7 +81,7 @@ def _load_grid(
               available_nums[i],
           )
         else:
-          num_difference = max(num, 0) - available_nums
+          num_difference = max(num, 0) - available_nums  # pyrefly: ignore[bad-specialization]
           i = np.nanargmin(np.where(num_difference < 0, np.nan, num_difference))
       return (
           jnp.asarray(quadrature_grids[f'r{i}']),

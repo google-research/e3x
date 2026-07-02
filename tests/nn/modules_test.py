@@ -298,13 +298,13 @@ def test_fused_tensor_default_init_preserves_zero_mean_and_unit_variance(
     max_degree_out = 0  # Only check scalar channels.
   else:
     max_degree_out = max_degree
-  if max_degree % 2 != 0 or not (
+  if max_degree % 2 != 0 or not (  # pyrefly: ignore[unsupported-operation]
       max_degree_in1 == max_degree or max_degree_in2 == max_degree
   ):
     max_degree_out = 0
 
   for p in range(y.shape[-3]):
-    for l in range(max_degree_out + 1):
+    for l in range(max_degree_out + 1):  # pyrefly: ignore[unsupported-operation]
       mean = jnp.mean(y[..., p, l**2 : (l + 1) ** 2, :])
       std = jnp.std(y[..., p, l**2 : (l + 1) ** 2, :])
       assert jnp.isclose(mean, 0.0, atol=0.25)
@@ -516,7 +516,7 @@ def test__conv(
     expected_outputs: Float[Array, '...'],
 ) -> None:
   conv = e3x.nn._Conv(
-      dense_kernel_init=identity_initializer,
+      dense_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
       tensor_kernel_init=(
           fused_tensor_ones if use_fused_tensor else jax.nn.initializers.ones
       ),
@@ -576,8 +576,8 @@ def test__conv_is_equivariant(
       params, inputs_ref, basis_ref, dst_idx=dst_idx, num_segments=num_segments
   )
   # Check for equivariance.
-  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)
-  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)
+  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
+  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
 
 
 @pytest.mark.parametrize('use_fused_tensor', [True, False])
@@ -752,8 +752,8 @@ def test_message_pass_is_equivariant(
       params, inputs_ref, basis_ref, dst_idx=dst_idx, src_idx=src_idx
   )
   # Check for equivariance.
-  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)
-  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)
+  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
+  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
 
 
 @pytest.mark.parametrize('use_fused_tensor', [True, False])
@@ -967,11 +967,11 @@ def test_multi_head_attention(
       num_heads=num_heads,
       use_relative_positional_encoding_qk=use_relative_positional_encoding_qk,
       use_relative_positional_encoding_v=use_relative_positional_encoding_v,
-      query_kernel_init=identity_initializer,
-      key_kernel_init=identity_initializer,
-      value_kernel_init=identity_initializer,
-      output_kernel_init=identity_initializer,
-      dense_kernel_init=identity_initializer,
+      query_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      key_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      value_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      output_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      dense_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
       tensor_kernel_init=(
           fused_tensor_ones if use_fused_tensor else jax.nn.initializers.ones
       ),
@@ -1057,8 +1057,8 @@ def test_multi_head_attention_is_equivariant(
       src_idx=src_idx,
   )
   # Check for equivariance.
-  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)
-  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)
+  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
+  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
 
 
 def test_multi_head_attention_raises_if_q_kv_shapes_are_incompatible() -> None:
@@ -1180,11 +1180,11 @@ def test_self_attention(
       num_heads=num_heads,
       use_relative_positional_encoding_qk=use_relative_positional_encoding_qk,
       use_relative_positional_encoding_v=use_relative_positional_encoding_v,
-      query_kernel_init=identity_initializer,
-      key_kernel_init=identity_initializer,
-      value_kernel_init=identity_initializer,
-      output_kernel_init=identity_initializer,
-      dense_kernel_init=identity_initializer,
+      query_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      key_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      value_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      output_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
+      dense_kernel_init=identity_initializer,  # pyrefly: ignore[bad-argument-type]
       tensor_kernel_init=(
           fused_tensor_ones if use_fused_tensor else jax.nn.initializers.ones
       ),
@@ -1260,5 +1260,5 @@ def test_self_attention_is_equivariant(
       src_idx=src_idx,
   )
   # Check for equivariance.
-  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)
-  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)
+  assert jnp.allclose(e3x.nn.rotate(outputs, wigner_d), outputs_rot, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
+  assert jnp.allclose(e3x.nn.reflect(outputs), outputs_ref, atol=1e-5)  # pyrefly: ignore[bad-argument-type]

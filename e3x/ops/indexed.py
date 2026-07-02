@@ -33,7 +33,7 @@ Shaped = jaxtyping.Shaped
 Shape = Sequence[Union[int, Any]]
 Dtype = Any
 _valid_index_types = ('dense', 'sparse')
-IndexType = Literal[_valid_index_types]
+IndexType = Literal[_valid_index_types]  # pyrefly: ignore[not-a-type]
 
 
 def _determine_index_type(
@@ -169,7 +169,7 @@ def dense_to_sparse_indices(
     src_idx = dst_idx
     return dst_idx, src_idx
   # Determine padding index.
-  pad_idx = jnp.max(adj_idx) + 1 if pad_idx is None else pad_idx
+  pad_idx = jnp.max(adj_idx) + 1 if pad_idx is None else pad_idx  # pyrefly: ignore[bad-assignment]
   # Remember original batch dimensions (might also be empty).
   batch_dims = adj_idx.shape[:-2]
   # Reshape so looping over batch dimension is possible.
@@ -182,7 +182,7 @@ def dense_to_sparse_indices(
     dst_idx.append([])
     src_idx.append([])
     for i in range(adj_idx.shape[-2]):
-      mask = adj_idx[b, i] < pad_idx
+      mask = adj_idx[b, i] < pad_idx  # pyrefly: ignore[unsupported-operation]
       src_idx[b].append(adj_idx[b, i, mask])
       dst_idx[b].append(
           jnp.full((len(src_idx[b][-1]),), i, dtype=adj_idx.dtype)
@@ -232,7 +232,7 @@ def sparse_to_dense_indices(
   if dst_idx.size == 0:
     return jnp.empty_like(dst_idx, shape=(*dst_idx.shape[:-1], 0, 0))
   # Determine padding index.
-  pad_idx = jnp.max(dst_idx) + 1 if pad_idx is None else pad_idx
+  pad_idx = jnp.max(dst_idx) + 1 if pad_idx is None else pad_idx  # pyrefly: ignore[bad-assignment]
   # Remember original batch dimensions (might also be empty).
   batch_dims = dst_idx.shape[:-1]
   # Reshape so looping over batch dimension is possible.
@@ -240,12 +240,12 @@ def sparse_to_dense_indices(
   src_idx = jnp.reshape(src_idx, (-1, src_idx.shape[-1]))
   # Determine how many entries are necessary for each index and batch.
   counts = jnp.array(
-      [jnp.count_nonzero(dst_idx == i, axis=-1) for i in range(pad_idx)]
+      [jnp.count_nonzero(dst_idx == i, axis=-1) for i in range(pad_idx)]  # pyrefly: ignore[bad-argument-type]
   ).T
   max_count = jnp.max(counts)
   # Fill adj_idx.
   adj_idx = jnp.full(
-      (dst_idx.shape[0], pad_idx, max_count), pad_idx, dtype=dst_idx.dtype
+      (dst_idx.shape[0], pad_idx, max_count), pad_idx, dtype=dst_idx.dtype  # pyrefly: ignore[bad-argument-type]
   )
   for b in range(adj_idx.shape[0]):  # Loop over batch dimension.
     for i in range(adj_idx.shape[1]):
@@ -379,9 +379,9 @@ def gather_src(
   """
   index_type = _determine_index_type(adj_idx=adj_idx, src_idx=src_idx)
   if index_type == 'dense':
-    gathered_inputs = _gather_dense(inputs, adj_idx)
+    gathered_inputs = _gather_dense(inputs, adj_idx)  # pyrefly: ignore[bad-argument-type]
   elif index_type == 'sparse':
-    gathered_inputs = _gather_sparse(inputs, src_idx)
+    gathered_inputs = _gather_sparse(inputs, src_idx)  # pyrefly: ignore[bad-argument-type]
   else:  # Protection from potential bugs if other valid values are added.
     assert False, f"Missing implementation for index_type '{index_type}'."
     gathered_inputs = inputs  # Silence typechecker.
@@ -415,7 +415,7 @@ def gather_dst(
   if index_type == 'dense' and adj_idx is not None:
     outputs = jnp.expand_dims(inputs, axis=adj_idx.ndim - 1)
   elif index_type == 'sparse':
-    outputs = _gather_sparse(inputs, dst_idx)
+    outputs = _gather_sparse(inputs, dst_idx)  # pyrefly: ignore[bad-argument-type]
   else:  # Protection from potential bugs if other valid values are added.
     assert False, f"Missing implementation for index_type='{index_type}'."
     outputs = inputs  # Silence typechecker.
@@ -423,7 +423,7 @@ def gather_dst(
 
 
 _valid_reduction_modes = ('sum', 'min', 'max')
-ReductionMode = Literal[_valid_reduction_modes]
+ReductionMode = Literal[_valid_reduction_modes]  # pyrefly: ignore[not-a-type]
 
 
 def _indexed_reduce(
@@ -500,13 +500,13 @@ def _indexed_reduce(
     )
     axis = adj_idx.ndim - 1
     if reduction_mode == 'sum':
-      outputs = jnp.sum(inputs, axis=axis, where=where, keepdims=keepdims)
+      outputs = jnp.sum(inputs, axis=axis, where=where, keepdims=keepdims)  # pyrefly: ignore[bad-argument-type]
     elif reduction_mode == 'min':
       outputs = jnp.min(
           inputs,
           axis=axis,
           where=where,
-          keepdims=keepdims,
+          keepdims=keepdims,  # pyrefly: ignore[bad-argument-type]
           initial=dtype_info(inputs.dtype).max,
       )
     elif reduction_mode == 'max':
@@ -514,7 +514,7 @@ def _indexed_reduce(
           inputs,
           axis=axis,
           where=where,
-          keepdims=keepdims,
+          keepdims=keepdims,  # pyrefly: ignore[bad-argument-type]
           initial=dtype_info(inputs.dtype).min,
       )
     else:  # Protection from potential bugs if other valid values are added.

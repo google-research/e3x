@@ -42,12 +42,12 @@ def test_basis(
 ) -> None:
   radial_fn = lambda x, n: jnp.expand_dims(x, -1) ** jnp.arange(n)
   basis = e3x.nn.basis(r, max_degree=max_degree, num=num, radial_fn=radial_fn)
-  assert basis.shape[-1] == num
-  assert basis.shape[-2] == (max_degree + 1) ** 2
-  assert basis.shape[-3] == 1  # Parity axis.
-  assert basis.shape[:-3] == r.shape[:-1]
+  assert basis.shape[-1] == num  # pyrefly: ignore[missing-attribute]
+  assert basis.shape[-2] == (max_degree + 1) ** 2  # pyrefly: ignore[missing-attribute]
+  assert basis.shape[-3] == 1  # Parity axis.  # pyrefly: ignore[missing-attribute]
+  assert basis.shape[:-3] == r.shape[:-1]  # pyrefly: ignore[missing-attribute]
   assert jnp.allclose(
-      basis[..., 0, 0, :], radial_fn(e3x.ops.norm(r, axis=-1), num), atol=1e-5
+      basis[..., 0, 0, :], radial_fn(e3x.ops.norm(r, axis=-1), num), atol=1e-5  # pyrefly: ignore[bad-index]
   )
 
 
@@ -92,9 +92,9 @@ def test_basis_angular_fn(
       max_degree=0,
       num=1,
       radial_fn=constant_radial_fn,
-      angular_fn=angular_fn,
+      angular_fn=angular_fn,  # pyrefly: ignore[bad-argument-type]
   )
-  assert jnp.isclose(basis[0, 0, 0], expected)
+  assert jnp.isclose(basis[0, 0, 0], expected)  # pyrefly: ignore[bad-index]
 
 
 @pytest.mark.parametrize(
@@ -118,14 +118,14 @@ def test_basis_cartesian_order(
       radial_fn=constant_radial_fn,
       cartesian_order=cartesian_order,
   )
-  assert jnp.allclose(basis[0, :, 0], expected, atol=1e-5)
+  assert jnp.allclose(basis[0, :, 0], expected, atol=1e-5)  # pyrefly: ignore[bad-index]
 
 
 def test_basis_with_cutoff_fn() -> None:
   radial_fn = lambda x, n: jnp.repeat(jnp.ones_like(x)[..., None], n, axis=-1)
   cutoff_fn = lambda x: jnp.where(x < 1.0, 1.0 - x, 0.0)
   r = jnp.asarray([[0.5, 0.0, 0.0], [2.0, 0.0, 0.0]])
-  basis, cutoff = e3x.nn.basis(
+  basis, cutoff = e3x.nn.basis(  # pyrefly: ignore[bad-unpacking]
       r=r,
       max_degree=0,
       num=1,
@@ -142,7 +142,7 @@ def test_basis_with_cutoff_fn_and_return_norm() -> None:
   radial_fn = lambda x, n: jnp.repeat(jnp.ones_like(x)[..., None], n, axis=-1)
   cutoff_fn = lambda x: jnp.where(x < 1.0, 1.0 - x, 0.0)
   r = jnp.asarray([[0.5, 0.0, 0.0], [2.0, 0.0, 0.0]])
-  basis, cutoff, norm = e3x.nn.basis(
+  basis, cutoff, norm = e3x.nn.basis(  # pyrefly: ignore[bad-unpacking]
       r=r,
       max_degree=0,
       num=1,
@@ -160,7 +160,7 @@ def test_basis_with_cutoff_fn_and_return_norm() -> None:
 def test_basis_with_return_norm() -> None:
   radial_fn = lambda x, n: jnp.repeat(jnp.ones_like(x)[..., None], n, axis=-1)
   r = jnp.asarray([[0.5, 0.0, 0.0], [2.0, 0.0, 0.0]])
-  _, norm = e3x.nn.basis(
+  _, norm = e3x.nn.basis(  # pyrefly: ignore[bad-unpacking]
       r=r,
       max_degree=0,
       num=1,
@@ -185,7 +185,7 @@ def test_basis_with_damping_fn() -> None:
   expected = jnp.asarray(
       [[[[1.0], [0.0], [0.0], [0.0]]], [[[1.0], [1.0], [0.0], [0.0]]]]
   )
-  assert jnp.allclose(basis, expected, atol=1e-5)
+  assert jnp.allclose(basis, expected, atol=1e-5)  # pyrefly: ignore[bad-argument-type]
 
 
 def test_basis_raises_with_invalid_shape() -> None:
@@ -232,7 +232,7 @@ def test_exponential_basis_is_equivalent_to_direct_call(
       num=num,
       radial_fn=radial_fn,
   )
-  assert jnp.allclose(direct_call, wrapper)
+  assert jnp.allclose(direct_call, wrapper)  # pyrefly: ignore[bad-argument-type]
 
 
 def test_exponential_basis_raises_with_non_exponentially_mapped_radial_fn(

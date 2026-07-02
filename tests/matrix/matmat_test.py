@@ -141,7 +141,7 @@ def test_rotational_invariance(ls: List[int], l_max: int, mult: int,
   xyz = np.random.normal(size=(n_shells, n_points, 3))
   r = Rotation.random().as_matrix()
   xyz_r = np.einsum('spd,de->spe', xyz, r)
-  sh = e3x.so3.irreps.spherical_harmonics(xyz, max_degree=l_max)
+  sh = e3x.so3.irreps.spherical_harmonics(xyz, max_degree=l_max)  # pyrefly: ignore[bad-argument-type]
   sum_sh = jnp.sum(sh, axis=1)  # [shells, (l_max+1)^2]
   sh_r = e3x.so3.irreps.spherical_harmonics(xyz_r, max_degree=l_max)
   sum_sh_r = jnp.sum(sh_r, axis=1)  # [shells, (l_max+1)^2]

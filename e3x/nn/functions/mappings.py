@@ -26,7 +26,7 @@ _valid_reciprocal_mappings = (
     'damped',
     'cuspless',
 )
-ReciprocalMapping = Literal[_valid_reciprocal_mappings]
+ReciprocalMapping = Literal[_valid_reciprocal_mappings]  # pyrefly: ignore[not-a-type]
 
 
 def reciprocal_mapping(

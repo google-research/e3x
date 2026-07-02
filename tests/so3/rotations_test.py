@@ -93,7 +93,7 @@ def test_rotation(
     axis: Float[Array, '... 3'], angle: float, expected: Float[Array, '... 3']
 ) -> None:
   xyz = jnp.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-  result = xyz @ e3x.so3.rotation(axis=axis, angle=angle)
+  result = xyz @ e3x.so3.rotation(axis=axis, angle=angle)  # pyrefly: ignore[bad-argument-type]
   assert jnp.allclose(result, expected, atol=1e-5)
 
 
@@ -309,7 +309,7 @@ def test_rotation_euler(
     a: float, b: float, c: float, expected: Float[Array, '... 3']
 ) -> None:
   xyz = jnp.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-  result = xyz @ e3x.so3.rotation_euler(a, b, c)
+  result = xyz @ e3x.so3.rotation_euler(a, b, c)  # pyrefly: ignore[bad-argument-type]
   assert jnp.allclose(result, expected, atol=1e-5)
 
 

@@ -97,8 +97,8 @@ def _generate_spherical_harmonics_lookup_table(
     num_sph = _total_number_of_spherical_harmonics(max_degree)
     return SphericalHarmonicsLookupTable(
         max_degree=max_degree,
-        cm=np.zeros((num_car, num_sph), dtype=np.float64),
-        ls=np.zeros((num_car, 3), dtype=np.int64),
+        cm=np.zeros((num_car, num_sph), dtype=np.float64),  # pyrefly: ignore[bad-argument-type]
+        ls=np.zeros((num_car, 3), dtype=np.int64),  # pyrefly: ignore[bad-argument-type]
     )
 
   def _load_from_cache(
@@ -118,7 +118,7 @@ def _generate_spherical_harmonics_lookup_table(
         num_sph = _total_number_of_spherical_harmonics(max_degree)
         return cached_max_degree, SphericalHarmonicsLookupTable(
             max_degree=max_degree,
-            cm=cm[:num_car, :num_sph],
+            cm=cm[:num_car, :num_sph],  # pyrefly: ignore[bad-argument-type]
             ls=cache['ls'][:num_car],
         )
       else:  # Necessary values exist only partially.
@@ -137,18 +137,18 @@ def _generate_spherical_harmonics_lookup_table(
         max_degree=lookup_table['max_degree'],
         ls=lookup_table['ls'],
         cm=lookup_table['cm'][i0, i1],
-        i0=i0,
-        i1=i1,
+        i0=i0,  # pyrefly: ignore[bad-argument-type]
+        i1=i1,  # pyrefly: ignore[bad-argument-type]
     )
 
   # Load cache stored on disk.
   cached_max_degree, lookup_table = _load_lookup_table_from_disk(
       max_degree=max_degree,
       lookup_table_name=_spherical_harmonics_lut_name,
-      config_cache_path=Config.spherical_harmonics_cache,
+      config_cache_path=Config.spherical_harmonics_cache,  # pyrefly: ignore[bad-argument-type]
       package_cache_path=_spherical_harmonics_lut_path,
-      load_from_cache=_load_from_cache,
-      init_empty_lookup_table=_init_empty_lookup_table,
+      load_from_cache=_load_from_cache,  # pyrefly: ignore[bad-argument-type]
+      init_empty_lookup_table=_init_empty_lookup_table,  # pyrefly: ignore[bad-argument-type]
   )
   lookup_table = cast(SphericalHarmonicsLookupTable, lookup_table)
 
@@ -201,9 +201,9 @@ def _generate_spherical_harmonics_lookup_table(
 
   # Save lookup table to disk cache.
   _save_lookup_table_to_disk(
-      lookup_table=_compress(lookup_table),
+      lookup_table=_compress(lookup_table),  # pyrefly: ignore[bad-argument-type]
       lookup_table_name=_spherical_harmonics_lut_name,
-      config_cache_path=Config.spherical_harmonics_cache,
+      config_cache_path=Config.spherical_harmonics_cache,  # pyrefly: ignore[bad-argument-type]
   )
 
   return lookup_table

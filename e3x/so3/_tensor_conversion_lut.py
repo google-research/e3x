@@ -66,13 +66,13 @@ def _traceless_tensor(n: int) -> Float[Array, '...']:
 
   # Degree 0 is trivial, since a 0-th degree tensor is just a scalar.
   if n == 0:
-    return np.asarray([1], dtype=object)
+    return np.asarray([1], dtype=object)  # pyrefly: ignore[bad-return]
 
   # Degree 1 is also trivial (vectors have no trace).
   x, y, z = sp.symbols('x y z')
   r = np.asarray([x, y, z], dtype=object)
   if n == 1:
-    return r
+    return r  # pyrefly: ignore[bad-return]
 
   # Construct traced tensor of degree n by repeated outer products.
   a = r.copy()
@@ -263,18 +263,18 @@ def _generate_tensor_conversion_lookup_table(
     """Unpacks lists and stores them as individual entries."""
     cache = {'max_degree': lookup_table['max_degree']}
     for l in range(lookup_table['max_degree'] + 1):
-      cache[f's2t{l}'] = lookup_table['s2t'][l]
-      cache[f't2s{l}'] = lookup_table['t2s'][l]
+      cache[f's2t{l}'] = lookup_table['s2t'][l]  # pyrefly: ignore[bad-assignment]
+      cache[f't2s{l}'] = lookup_table['t2s'][l]  # pyrefly: ignore[bad-assignment]
     return cache
 
   # Load cache stored on disk.
   cached_max_degree, lookup_table = _load_lookup_table_from_disk(
       max_degree=max_degree,
       lookup_table_name=_tensor_conversion_lut_name,
-      config_cache_path=Config.tensor_conversion_cache,
+      config_cache_path=Config.tensor_conversion_cache,  # pyrefly: ignore[bad-argument-type]
       package_cache_path=_tensor_conversion_lut_path,
-      load_from_cache=_load_from_cache,
-      init_empty_lookup_table=_init_empty_lookup_table,
+      load_from_cache=_load_from_cache,  # pyrefly: ignore[bad-argument-type]
+      init_empty_lookup_table=_init_empty_lookup_table,  # pyrefly: ignore[bad-argument-type]
   )
   lookup_table = cast(TensorConversionLookupTable, lookup_table)
 
@@ -304,14 +304,14 @@ def _generate_tensor_conversion_lookup_table(
 
   # Store results in lookup table.
   for s2t, t2s in s2t_and_t2s:
-    lookup_table['s2t'].append(np.asarray(s2t, dtype=np.float64))
-    lookup_table['t2s'].append(np.asarray(t2s, dtype=np.float64))
+    lookup_table['s2t'].append(np.asarray(s2t, dtype=np.float64))  # pyrefly: ignore[bad-argument-type]
+    lookup_table['t2s'].append(np.asarray(t2s, dtype=np.float64))  # pyrefly: ignore[bad-argument-type]
 
   # Save lookup table to disk cache.
   _save_lookup_table_to_disk(
       lookup_table=_unpack_lists(lookup_table),
       lookup_table_name=_tensor_conversion_lut_name,
-      config_cache_path=Config.tensor_conversion_cache,
+      config_cache_path=Config.tensor_conversion_cache,  # pyrefly: ignore[bad-argument-type]
   )
 
   return lookup_table

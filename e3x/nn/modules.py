@@ -174,7 +174,7 @@ class Dense(nn.Module):
               use_bias=use_bias and l == 0,  # Apply bias only for scalars!
               dtype=self.dtype,
               param_dtype=self.param_dtype,
-              precision=self.precision,
+              precision=self.precision,  # pyrefly: ignore[bad-argument-type]
               kernel_init=self.kernel_init,
               bias_init=self.bias_init,
               name=name[l],
@@ -1651,7 +1651,7 @@ class MultiHeadAttention(_Conv):
         inputs_q.shape[-1] if self.qkv_features is None else self.qkv_features
     )
 
-    if qkv_features % self.num_heads != 0:
+    if qkv_features % self.num_heads != 0:  # pyrefly: ignore[unsupported-operation]
       raise ValueError(
           f'qkv_features ({qkv_features}) must be divisible by '
           f'num_heads ({self.num_heads})'
@@ -1731,11 +1731,11 @@ class MultiHeadAttention(_Conv):
           use_bias=self.use_basis_bias,
           dtype=self.dtype,
           param_dtype=self.param_dtype,
-          precision=self.precision,
+          precision=self.precision,  # pyrefly: ignore[bad-argument-type]
           kernel_init=self.dense_kernel_init,
           bias_init=self.dense_bias_init,
           name='relative_positional_encoding',
-      )(basis[..., 0, 0, :])
+      )(basis[..., 0, 0, :])  # pyrefly: ignore[unsupported-operation]
 
       # Reshape to (..., num_parity_channels, max_degree+1, qkv_features).
       rel_pos_encoding = jnp.reshape(
@@ -1802,7 +1802,7 @@ class MultiHeadAttention(_Conv):
     )(dot)
 
     # Duplicate weights for each feature in a head.
-    weight = jnp.repeat(weight, qkv_features // self.num_heads, axis=-1)
+    weight = jnp.repeat(weight, qkv_features // self.num_heads, axis=-1)  # pyrefly: ignore[unsupported-operation]
 
     # Expand shape of weight for broadcasting (add parity and degree channel).
     weight = jnp.expand_dims(weight, (-2, -3))

@@ -84,7 +84,7 @@ def _generate_clebsch_gordan_lookup_table(
     num_sph = _total_number_of_spherical_harmonics(max_degree)
     return ClebschGordanLookupTable(
         max_degree=max_degree,
-        cg=np.zeros((num_sph, num_sph, num_sph), dtype=np.float64),
+        cg=np.zeros((num_sph, num_sph, num_sph), dtype=np.float64),  # pyrefly: ignore[bad-argument-type]
     )
 
   def _load_from_cache(f: IO[bytes]) -> Tuple[int, ClebschGordanLookupTable]:
@@ -101,7 +101,7 @@ def _generate_clebsch_gordan_lookup_table(
       if max_degree <= cached_max_degree:  # All necessary values exist.
         num_sph = _total_number_of_spherical_harmonics(max_degree)
         return cached_max_degree, ClebschGordanLookupTable(
-            max_degree=max_degree, cg=cg[:num_sph, :num_sph, :num_sph]
+            max_degree=max_degree, cg=cg[:num_sph, :num_sph, :num_sph]  # pyrefly: ignore[bad-argument-type]
         )
       else:  # Necessary values exist only partially.
         # Return partially filled lookup table.
@@ -119,19 +119,19 @@ def _generate_clebsch_gordan_lookup_table(
     return _CompressedLookupTable(
         max_degree=lookup_table['max_degree'],
         cg=lookup_table['cg'][i0, i1, i2],
-        i0=i0,
-        i1=i1,
-        i2=i2,
+        i0=i0,  # pyrefly: ignore[bad-argument-type]
+        i1=i1,  # pyrefly: ignore[bad-argument-type]
+        i2=i2,  # pyrefly: ignore[bad-argument-type]
     )
 
   # Load cache stored on disk.
   cached_max_degree, lookup_table = _load_lookup_table_from_disk(
       max_degree=max_degree,
       lookup_table_name=_clebsch_gordan_lut_name,
-      config_cache_path=Config.clebsch_gordan_cache,
+      config_cache_path=Config.clebsch_gordan_cache,  # pyrefly: ignore[bad-argument-type]
       package_cache_path=_clebsch_gordan_lut_path,
-      load_from_cache=_load_from_cache,
-      init_empty_lookup_table=_init_empty_lookup_table,
+      load_from_cache=_load_from_cache,  # pyrefly: ignore[bad-argument-type]
+      init_empty_lookup_table=_init_empty_lookup_table,  # pyrefly: ignore[bad-argument-type]
   )
   lookup_table = cast(ClebschGordanLookupTable, lookup_table)
 
@@ -182,9 +182,9 @@ def _generate_clebsch_gordan_lookup_table(
 
   # Save lookup table to disk cache.
   _save_lookup_table_to_disk(
-      lookup_table=_compress(lookup_table),
+      lookup_table=_compress(lookup_table),  # pyrefly: ignore[bad-argument-type]
       lookup_table_name=_clebsch_gordan_lut_name,
-      config_cache_path=Config.clebsch_gordan_cache,
+      config_cache_path=Config.clebsch_gordan_cache,  # pyrefly: ignore[bad-argument-type]
   )
 
   return lookup_table

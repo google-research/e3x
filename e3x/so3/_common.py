@@ -140,7 +140,7 @@ def _multicombinations(n: int, k: int) -> Iterator[tuple[int, ...]]:
 def _monomial_powers_of_degree(degree: int) -> Iterator[tuple[int, int, int]]:
   """Yields all possible (a,b,c) for monomials xᵃyᵇzᶜ with a given degree."""
   for multicombination in _multicombinations(n=degree, k=3):
-    yield multicombination
+    yield multicombination  # pyrefly: ignore[invalid-yield]
 
 
 def _rotation_matrix_powers_of_degree(
@@ -148,7 +148,7 @@ def _rotation_matrix_powers_of_degree(
 ) -> Iterator[tuple[int, int, int, int, int, int, int, int, int]]:
   """Yields all power combinations of 9 variable monomials with given degree."""
   for multicombination in _multicombinations(n=degree, k=9):
-    yield multicombination
+    yield multicombination  # pyrefly: ignore[invalid-yield]
 
 
 def _integer_powers(

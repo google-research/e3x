@@ -166,7 +166,7 @@ def test_sparse_pairwise_indices(
     num: int, mask_self: bool, expected: Integer[Array, '...']
 ) -> None:
   assert jnp.array_equal(  # pytype: disable=wrong-arg-types  # jnp-type
-      e3x.ops.sparse_pairwise_indices(num=num, mask_self=mask_self), expected
+      e3x.ops.sparse_pairwise_indices(num=num, mask_self=mask_self), expected  # pyrefly: ignore[bad-argument-type]
   )
 
 

@@ -221,7 +221,7 @@ def basis(
       out += (cut,)
     if return_norm:
       out += (norm,)
-  return out
+  return out  # pyrefly: ignore[bad-return]
 
 
 class ExponentialBasis(nn.Module):

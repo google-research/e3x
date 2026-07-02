@@ -50,7 +50,7 @@ def test__gated_linear_raises_with_invalid_shape() -> None:
   with pytest.raises(
       ValueError, match='shape of x must have at least three dimensions'
   ):
-    e3x.nn.activations._gated_linear(g=lambda x: 1, x=jnp.asarray(0))
+    e3x.nn.activations._gated_linear(g=lambda x: 1, x=jnp.asarray(0))  # pyrefly: ignore[bad-argument-type]
 
 
 @pytest.mark.parametrize(

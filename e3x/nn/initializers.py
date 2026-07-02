@@ -136,7 +136,7 @@ def _compute_tensor_fans_and_mask(
 
 _valid_distributions = ('truncated_normal', 'normal', 'uniform')
 
-Distribution = Literal[_valid_distributions]
+Distribution = Literal[_valid_distributions]  # pyrefly: ignore[not-a-type]
 
 
 def _random_array(
@@ -200,7 +200,7 @@ def _random_array(
 
 _valid_modes = ('fan_in', 'fan_out', 'fan_avg')
 
-Mode = Literal[_valid_modes]
+Mode = Literal[_valid_modes]  # pyrefly: ignore[not-a-type]
 
 
 class InitializerFn(Protocol):

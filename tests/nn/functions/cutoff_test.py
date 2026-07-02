@@ -185,4 +185,4 @@ def test_cutoff_fn_raises_with_invalid_cutoff(
     cutoff: float,
 ) -> None:
   with pytest.raises(ValueError, match='cutoff must be larger than 0'):
-    cutoff_fn(1, cutoff)
+    cutoff_fn(1, cutoff)  # pyrefly: ignore[bad-argument-type]

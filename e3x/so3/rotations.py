@@ -138,7 +138,7 @@ def alignment_rotation(
   # Handle antiparallel case.
   w = ops.normalize(u + jnp.roll(u, shift=1, axis=-1))
   axis = jnp.cross(u, w)
-  rot = jnp.where(mask[..., None, None], rot, rotation(axis, jnp.pi))
+  rot = jnp.where(mask[..., None, None], rot, rotation(axis, jnp.pi))  # pyrefly: ignore[bad-argument-type]
 
   return rot
 

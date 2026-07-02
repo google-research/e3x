@@ -60,7 +60,7 @@ def _load_lookup_table_from_disk(
       return load_from_cache(f)
   else:  # Load pre-computed lookup table included with package.
     try:
-      f = io.BytesIO(pkgutil.get_data(__name__, package_cache_path))
+      f = io.BytesIO(pkgutil.get_data(__name__, package_cache_path))  # pyrefly: ignore[bad-argument-type]
       return load_from_cache(f)
     except (zipfile.BadZipFile, OSError, IOError, KeyError, ValueError):
       logging.exception(

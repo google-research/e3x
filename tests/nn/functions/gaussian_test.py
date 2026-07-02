@@ -79,7 +79,7 @@ def test__gaussian_has_nan_safe_derivatives(num: int) -> None:
 
 def test__gaussian_raises_with_invalid_num() -> None:
   with pytest.raises(ValueError, match='num must be greater or equal to 1'):
-    e3x.nn.functions.gaussian._gaussian(0, num=0)
+    e3x.nn.functions.gaussian._gaussian(0, num=0)  # pyrefly: ignore[bad-argument-type]
 
 
 def test_basic_gaussian() -> None:
