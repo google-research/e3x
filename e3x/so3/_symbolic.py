@@ -158,7 +158,7 @@ def _rotate_xyz_polynomial(p: sp.Poly) -> sp.Poly:
   zs = r20 * x + r21 * y + r22 * z
   # Substitute x, y, z with rotated coordinates xs, ys, zs.
   x_, y_, z_ = sp.symbols('x_ y_ z_')  # (Necessary) temporary coordinates.
-  p = p.subs([(x, x_), (y, y_), (z, z_)]).subs([(x_, xs), (y_, ys), (z_, zs)])
+  p = p.subs([(x, x_), (y, y_), (z, z_)]).subs([(x_, xs), (y_, ys), (z_, zs)])  # pyrefly: ignore[bad-assignment]
   # Return as a polynomial in the (unrotated) x, y, z coordinates.
   return sp.Poly(sp.simplify(p), x, y, z)
 
