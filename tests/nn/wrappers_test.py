@@ -223,7 +223,7 @@ def test_exponential_basis_is_equivalent_to_direct_call(
       r,
       max_degree=max_degree,
       num=num,
-      radial_fn=functools.partial(radial_fn, gamma=gamma),
+      radial_fn=functools.partial(radial_fn, gamma=gamma),  # pyrefly: ignore[unexpected-keyword]
   )
   wrapper, _ = e3x.nn.ExponentialBasis(initial_gamma=gamma).init_with_output(
       jax.random.PRNGKey(0),

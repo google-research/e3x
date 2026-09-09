@@ -1074,7 +1074,7 @@ def _create_tensor(
         FusedTensor,
         name='fused_tensor',
         kernel_init=(
-            default_fused_tensor_kernel_init
+            default_fused_tensor_kernel_init  # pyrefly: ignore[bad-argument-type]
             if tensor_kernel_init is None
             else tensor_kernel_init
         ),
@@ -1084,7 +1084,7 @@ def _create_tensor(
         Tensor,
         name='tensor',
         kernel_init=(
-            default_tensor_kernel_init
+            default_tensor_kernel_init  # pyrefly: ignore[bad-argument-type]
             if tensor_kernel_init is None
             else tensor_kernel_init
         ),
