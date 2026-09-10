@@ -100,7 +100,7 @@ def alignment_rotation(
   :math:`\vec{u}` with the vector :math:`\vec{v}` using the shortest possible
   arc. When :math:`\vec{u}` and :math:`\vec{v}` are exactly antiparallel, there
   are infinitely many paths with the same arc length and one of them is chosen
-  at random.
+  deterministically.
 
   Example:
     >>> import jax.numpy as jnp
@@ -121,24 +121,31 @@ def alignment_rotation(
   u = ops.normalize(u, axis=-1)
   v = ops.normalize(v, axis=-1)
 
+  dot = jnp.sum(u * v, axis=-1)
+  mask = dot >= 0
+  # u x (u + v) equals u x v, but avoids cancellation near antiparallel.
+  x = jnp.cross(u, jnp.where(mask[..., None], v, u + v))
   # Create the skew-symmetric cross product matrix.
-  x = jnp.cross(u, v)  # Cross product vector.
   zeros = jnp.zeros_like(x[..., 0:1])
   col1 = jnp.concatenate((zeros, -x[..., 2:3], x[..., 1:2]), axis=-1)
   col2 = jnp.concatenate((x[..., 2:3], zeros, -x[..., 0:1]), axis=-1)
   col3 = jnp.concatenate((-x[..., 1:2], x[..., 0:1], zeros), axis=-1)
   skew = jnp.stack((col1, col2, col3), axis=-1)
 
-  # Calculate rotation matrix (does not handle antiparallel case correctly).
-  div = 1 + jnp.sum(u * v, axis=-1)
-  mask = div > 0
-  safe_div = jnp.where(mask, div, 1)
+  # The direct formula is well-conditioned for non-obtuse angles.
+  safe_div = jnp.where(mask, 1 + dot, 1)
   rot = skew + skew @ skew * (1 / safe_div)[..., None, None] + jnp.eye(3)
 
-  # Handle antiparallel case.
-  w = ops.normalize(u + jnp.roll(u, shift=1, axis=-1))
-  axis = jnp.cross(u, w)
-  rot = jnp.where(mask[..., None, None], rot, rotation(axis, jnp.pi))  # pyrefly: ignore[bad-argument-type]
+  # For obtuse angles, avoid cancellation in 1 + dot. At antiparallel
+  # inputs the cross product vanishes, so choose a guaranteed perpendicular
+  # axis using the coordinate direction least aligned with u.
+  cross_norm = ops.norm(x, axis=-1)
+  basis = jax.nn.one_hot(jnp.argmin(jnp.abs(u), axis=-1), 3, dtype=u.dtype)
+  axis = jnp.where(
+      (cross_norm > jnp.finfo(u.dtype).eps)[..., None], x, jnp.cross(u, basis)
+  )
+  angle = jnp.arctan2(cross_norm, dot)
+  rot = jnp.where(mask[..., None, None], rot, rotation(axis, angle))
 
   return rot
 
