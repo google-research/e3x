@@ -18,6 +18,7 @@ from ..testing import subtests
 import jax
 import jax.numpy as jnp
 import jaxtyping
+import numpy as np
 import pytest
 
 Array = jaxtyping.Array
@@ -175,6 +176,49 @@ def test_alignment_rotation(
       e3x.ops.norm(us, axis=-1) * e3x.ops.norm(v, axis=-1)
   )
   assert jnp.allclose(cos, 1.0, atol=1e-5)
+
+
+@pytest.mark.parametrize('compiled', [False, True])
+@pytest.mark.parametrize('offset', [0.0, 1e-4, 1e-2])
+def test_alignment_rotation_near_antiparallel(compiled, offset):
+  # Include symmetric diagonals for which rolling u cannot give a new axis.
+  u = np.array([
+      [1., 1., 1.], [-1., -1., -1.], [1., 0., 0.],
+      [0., 1., 0.], [0., 0., -1.], [1., -2., 3.],
+  ], dtype=np.float32)
+  v = -u + offset * np.roll(u, 1, axis=-1)
+  u /= np.linalg.norm(u, axis=-1, keepdims=True)
+  v /= np.linalg.norm(v, axis=-1, keepdims=True)
+  align = e3x.so3.alignment_rotation
+  if compiled:
+    align = jax.jit(align)
+  rot = np.asarray(align(jnp.asarray(u), jnp.asarray(v)))
+  np.testing.assert_allclose(
+      np.einsum('...i,...ij->...j', u, rot), v, atol=2e-6)
+  np.testing.assert_allclose(
+      rot @ np.swapaxes(rot, -1, -2),
+      np.broadcast_to(np.eye(3), rot.shape), atol=2e-6)
+  np.testing.assert_allclose(np.linalg.det(rot), 1., atol=2e-6)
+
+
+def test_alignment_rotation_antiparallel_single_matches_batch():
+  u = jnp.asarray([1., 1., 1.])
+  rot = e3x.so3.alignment_rotation(u, -u)
+  np.testing.assert_allclose(u @ rot, -u, atol=2e-6)
+  batch_u = jnp.stack([u, jnp.asarray([1., -2., 3.])])
+  batch_rot = e3x.so3.alignment_rotation(batch_u, -batch_u)
+  np.testing.assert_allclose(rot, batch_rot[0], atol=2e-6)
+
+
+@pytest.mark.parametrize('v', [[1., 0., 0.], [1., 2., 3.], [-1., 2., 3.]])
+def test_alignment_rotation_gradients_are_finite(v):
+  u, v = jnp.asarray([1., 0., 0.]), jnp.asarray(v)
+  fn = e3x.so3.alignment_rotation
+  tangent = jnp.ones(3)
+  _, jvp = jax.jvp(fn, (u, v), (tangent, tangent))
+  _, pullback = jax.vjp(fn, u, v)
+  assert jnp.all(jnp.isfinite(jvp))
+  assert all(jnp.all(jnp.isfinite(g)) for g in pullback(jnp.ones((3, 3))))
 
 
 @pytest.fixture(name='random_vectors')
