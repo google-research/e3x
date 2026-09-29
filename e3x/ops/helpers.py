@@ -56,5 +56,5 @@ def evaluate_derivatives(
   y[0] = f(x)  # pyrefly: ignore[unsupported-operation]
   for i in range(max_order):
     f = derivative(f)  # Using a lambda directly here raises RecursionError.
-    y[i + 1] = f(x)
+    y[i + 1] = f(x)  # pyrefly: ignore[unsupported-operation]
   return y  # pyrefly: ignore[bad-return]
