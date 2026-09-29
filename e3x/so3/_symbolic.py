@@ -197,7 +197,7 @@ def _polynomial_dot_product(
   # Calculate dot product.
   p1 = p1.as_dict()
   p2 = collections.defaultdict(lambda: sp.S(0), p2.as_dict())  # pyrefly: ignore[bad-assignment]
-  for key in p1:  # key = (a, b, c)
+  for key in p1:  # key = (a, b, c)  # pyrefly: ignore[not-iterable]
     result += p1[key] * p2[key] / trinomial_coefficient(*key)  # pyrefly: ignore[bad-index]
   result *= sp.S(2) ** degree / sp.binomial(2 * degree, degree)
   # Return result as polynomial.
