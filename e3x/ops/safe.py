@@ -77,7 +77,7 @@ def _norm_jvp_impl(
   if not keepdims and axis is not None:
     masked_primal_out = jnp.expand_dims(masked_primal_out, axis=axis)
   tangent_out = jnp.sum(
-      x_dot * x / masked_primal_out,
+      x_dot * (x / masked_primal_out),
       axis=axis,
       keepdims=keepdims,
   )
