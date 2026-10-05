@@ -320,7 +320,7 @@ def fixture_random_euler_angles(
   euler_angles = jax.random.uniform(
       jax.random.PRNGKey(0), shape=(num, 3), minval=-jnp.pi, maxval=jnp.pi
   )
-  return jnp.split(euler_angles, 3, axis=-1)  # pytype: disable=bad-return-type  # jnp-type
+  return jnp.split(euler_angles, 3, axis=-1)  # pyrefly: ignore[bad-return]
 
 
 def test_rotation_euler_has_determinant_1(

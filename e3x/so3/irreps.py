@@ -377,7 +377,7 @@ def is_traceless_symmetric(
       return False
   # Check for tracelessness. Note: Checking only one trace is valid after
   # checking for symmetry, because for symmetric tensors, all traces are equal.
-  return jnp.allclose(jnp.trace(x, axis1=-2, axis2=-1), 0, rtol=rtol, atol=atol)  # pytype: disable=bad-return-type  # jnp-type
+  return jnp.allclose(jnp.trace(x, axis1=-2, axis2=-1), 0, rtol=rtol, atol=atol)  # pyrefly: ignore[bad-return]
 
 
 def _tensor_compression_indices(

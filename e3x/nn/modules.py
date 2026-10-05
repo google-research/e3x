@@ -1376,7 +1376,7 @@ class MessagePass(_Conv):
   """
 
   @nn.compact
-  def __call__(  # pytype: disable=signature-mismatch  # overriding-parameter-count-checks
+  def __call__(
       self,
       inputs: Union[
           Float[Array, '... N 1 (in_max_degree+1)**2 num_features'],
@@ -1565,7 +1565,7 @@ class MultiHeadAttention(_Conv):
   output_use_bias: bool = True
 
   @nn.compact
-  def __call__(  # pytype: disable=signature-mismatch  # overriding-parameter-count-checks
+  def __call__(
       self,
       inputs_q: Union[
           Float[Array, '... N 1 (max_degree+1)**2 q_features'],

@@ -165,7 +165,7 @@ def test_dense_pairwise_indices_raises_if_num_negative_or_zero(
 def test_sparse_pairwise_indices(
     num: int, mask_self: bool, expected: Integer[Array, '...']
 ) -> None:
-  assert jnp.array_equal(  # pytype: disable=wrong-arg-types  # jnp-type
+  assert jnp.array_equal(
       e3x.ops.sparse_pairwise_indices(num=num, mask_self=mask_self), expected  # pyrefly: ignore[bad-argument-type]
   )
 

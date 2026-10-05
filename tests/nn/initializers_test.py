@@ -114,7 +114,7 @@ def test__random_array(
 def test__random_array_raises_with_invalid_distribution() -> None:
   with pytest.raises(ValueError, match='invalid distribution'):
     e3x.nn.initializers._random_array(
-        key=jax.random.PRNGKey(0), shape=(1,), distribution='foo'  # pytype: disable=wrong-arg-types
+        key=jax.random.PRNGKey(0), shape=(1,), distribution='foo'
     )
 
 
@@ -251,14 +251,14 @@ def test_tensor_variance_scaling() -> None:
 def test_tensor_variance_scaling_raises_with_invalid_mode() -> None:
   with pytest.raises(ValueError, match='invalid mode'):
     e3x.nn.initializers.tensor_variance_scaling(
-        scale=1.0, mode='foo', distribution='normal'  # pytype: disable=wrong-arg-types
+        scale=1.0, mode='foo', distribution='normal'
     )(key=jax.random.PRNGKey(0), shape=(1, 1, 1, 1, 1, 1, 1))
 
 
 def test_tensor_variance_scaling_raises_with_invalid_distribution() -> None:
   with pytest.raises(ValueError, match='invalid distribution'):
     e3x.nn.initializers.tensor_variance_scaling(
-        scale=1.0, mode='fan_avg', distribution='foo'  # pytype: disable=wrong-arg-types
+        scale=1.0, mode='fan_avg', distribution='foo'
     )(key=jax.random.PRNGKey(0), shape=(1, 1, 1, 1, 1, 1, 1))
 
 
