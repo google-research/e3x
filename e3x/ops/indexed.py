@@ -767,7 +767,8 @@ def indexed_softmax(
       may increase performance (only used for sparse index lists).
 
   Returns:
-    An array with the softmax values.
+    An array with the softmax values. Masked dense entries, including fully
+    padded neighborhoods, are zero.
 
   Raises:
     RuntimeError: If neither dense nor sparse index lists are provided, or if
@@ -800,9 +801,17 @@ def indexed_softmax(
       num_segments=num_segments,
       indices_are_sorted=indices_are_sorted,
   )
-  numerator = jnp.exp(inputs - lax.stop_gradient(maximum))
+  shifted = inputs - lax.stop_gradient(maximum)
+  if adj_idx is not None:
+    # Mask before exp: even an unused overflow can poison reverse-mode gradients.
+    shifted = jnp.where(where, shifted, 0)
+  numerator = jnp.exp(shifted)
   if multiplicative_mask is not None:
+    if adj_idx is not None:
+      multiplicative_mask = jnp.where(where, multiplicative_mask, 0)
     numerator *= multiplicative_mask
+  if adj_idx is not None:
+    numerator = jnp.where(where, numerator, 0)
   denominator = indexed_sum(
       inputs=numerator,
       keepdims=True,
@@ -812,4 +821,7 @@ def indexed_softmax(
       num_segments=num_segments,
       indices_are_sorted=indices_are_sorted,
   )
+  if adj_idx is not None:
+    # Fully padded neighborhoods have no probability mass to normalize.
+    denominator = jnp.where(jnp.any(where, axis=-1, keepdims=True), denominator, 1)
   return numerator / denominator
