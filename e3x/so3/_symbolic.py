@@ -42,13 +42,13 @@ def _spherical_harmonics(l: int, m: int) -> sp.Poly:
     a = sp.S(0)
     for p in range(m + 1):
       a += sp.binomial(m, p) * x**p * y ** (m - p) * sp.cos((m - p) * sp.pi / 2)
-    return a
+    return a  # pyrefly: ignore[bad-return]
 
   def b(m: int, x: sp.Symbol, y: sp.Symbol) -> sp.Symbol:
     b = sp.S(0)
     for p in range(m + 1):
       b += sp.binomial(m, p) * x**p * y ** (m - p) * sp.sin((m - p) * sp.pi / 2)
-    return b
+    return b  # pyrefly: ignore[bad-return]
 
   def pi(l: int, m: int, x: sp.Symbol, y: sp.Symbol, z: sp.Symbol) -> sp.Symbol:
     pi = sp.S(0)
@@ -193,7 +193,7 @@ def _polynomial_dot_product(
   # Early out if degrees do not match.
   degree = p1.total_degree()
   if degree != p2.total_degree():
-    return result
+    return result  # pyrefly: ignore[bad-return]
   # Calculate dot product.
   p1 = p1.as_dict()
   p2 = collections.defaultdict(lambda: sp.S(0), p2.as_dict())  # pyrefly: ignore[bad-assignment]
