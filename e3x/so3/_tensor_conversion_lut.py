@@ -140,7 +140,7 @@ def _traceless_tensor(n: int) -> Float[Array, '...']:
       [i for i in itertools.combinations_with_replacement((0, 1, 2), r=n)]
   )
   indices = tuple(np.squeeze(i, axis=-1) for i in np.hsplit(indices, n))
-  return b[indices]
+  return b[indices]  # pyrefly: ignore[bad-return]
 
 
 def _tensor_conversion_matrices(l: int):
