@@ -15,7 +15,9 @@
 from typing import Optional
 import e3x
 from ..testing import subtests
+import jax
 import jax.numpy as jnp
+import numpy as np
 import jaxtyping
 import pytest
 
@@ -1003,3 +1005,110 @@ def test_indexed_softmax(
     result = result[where]
     expected = expected[where]
   assert jnp.allclose(result, expected, atol=1e-6)
+
+
+@pytest.mark.parametrize('padding', [1000.0, -1000.0, np.inf, -np.inf, np.nan])
+@pytest.mark.parametrize('use_cutoff', [False, True])
+def test_dense_softmax_masked_logits_have_zero_finite_gradients(padding, use_cutoff):
+  inputs = jnp.array([[0.0, 1.0, padding]])
+  where = jnp.array([[True, True, False]])
+  adj_idx = jnp.array([[0, 1, 2]])
+  cutoff = jnp.array([[0.5, 1.0, 2.0]]) if use_cutoff else None
+
+  def output(x):
+    return e3x.ops.indexed_softmax(
+        x, adj_idx=adj_idx, where=where, multiplicative_mask=cutoff
+    )
+
+  def objective(x):
+    return jnp.where(where, output(x) * jnp.array([[1.0, 3.0, 0.0]]), 0.0).sum()
+
+  def reference(x):
+    weights = jnp.exp(x - jnp.max(x))
+    if use_cutoff:
+      weights = weights * jnp.array([0.5, 1.0])
+    weights = weights / weights.sum()
+    return (weights * jnp.array([1.0, 3.0])).sum()
+
+  expected_value, expected_gradient = jax.value_and_grad(reference)(inputs[0, :2])
+  for call in (jax.value_and_grad(objective), jax.jit(jax.value_and_grad(objective))):
+    value, gradient = call(inputs)
+    np.testing.assert_allclose(value, expected_value, rtol=1e-6)
+    np.testing.assert_allclose(gradient[0, :2], expected_gradient, rtol=1e-5, atol=1e-7)
+    np.testing.assert_array_equal(gradient[0, 2:], 0.0)
+    assert bool(jnp.all(jnp.isfinite(gradient)))
+  np.testing.assert_array_equal(output(inputs)[0, 2:], 0.0)
+
+
+def test_dense_softmax_empty_neighborhoods_are_zero_under_vmap_and_jit():
+  values = jnp.array([[[0.0, 2.0], [1000.0, np.nan]], [[1.0, 4.0], [np.inf, -np.inf]]])
+  where = jnp.array([[True, True], [False, False]])
+  adj_idx = jnp.array([[0, 1], [0, 1]])
+
+  def apply(x):
+    return e3x.ops.indexed_softmax(x, adj_idx=adj_idx, where=where)
+
+  output = jax.jit(jax.vmap(apply))(values)
+  np.testing.assert_allclose(
+      output[:, 0], jax.nn.softmax(values[:, 0], axis=-1), rtol=1e-6
+  )
+  np.testing.assert_array_equal(output[:, 1], 0.0)
+  gradient = jax.jit(jax.grad(lambda x: jax.vmap(apply)(x).sum()))(values)
+  assert bool(jnp.all(jnp.isfinite(gradient)))
+  np.testing.assert_array_equal(gradient[:, 1], 0.0)
+
+
+def test_dense_softmax_matches_sparse_values_and_cutoff_gradients():
+  values = jnp.array([[0.0, 1.0, 1000.0], [3.0, 4.0, -1000.0]])
+  where = jnp.array([[True, True, False], [True, True, False]])
+  adj_idx = jnp.array([[0, 1, 2], [0, 1, 2]])
+  cutoff = jnp.array([[0.4, 0.8, 0.2], [0.3, 0.9, 0.5]])
+
+  def dense(c):
+    return e3x.ops.indexed_softmax(
+        values, adj_idx=adj_idx, where=where, multiplicative_mask=c
+    )
+
+  def sparse(c):
+    return e3x.ops.indexed_softmax(
+        values[:, :2].reshape(-1),
+        multiplicative_mask=c[:, :2].reshape(-1),
+        dst_idx=jnp.array([0, 0, 1, 1]),
+        num_segments=2,
+    )
+
+  np.testing.assert_allclose(
+      dense(cutoff)[:, :2].reshape(-1), sparse(cutoff), rtol=1e-6
+  )
+  coefficients = jnp.array([1.0, 3.0, 2.0, 4.0])
+  grad_dense = jax.grad(lambda c: (dense(c)[:, :2].reshape(-1) * coefficients).sum())(
+      cutoff
+  )
+  grad_sparse = jax.grad(lambda c: (sparse(c) * coefficients).sum())(cutoff)
+  np.testing.assert_allclose(grad_dense, grad_sparse, rtol=1e-5, atol=1e-6)
+
+
+def test_self_attention_backward_remains_finite_with_an_empty_neighborhood():
+  inputs = jnp.arange(6.0, dtype=jnp.float32).reshape(3, 1, 1, 2) / 4.0
+  adj_idx = jnp.array([[0, 1], [0, 1], [0, 0]])
+  where = jnp.array([[True, True], [True, True], [False, False]])
+  attention = e3x.nn.SelfAttention(
+      num_heads=1,
+      use_relative_positional_encoding_qk=False,
+      use_relative_positional_encoding_v=False,
+  )
+  variables = attention.init(
+      jax.random.PRNGKey(4), inputs=inputs, adj_idx=adj_idx, where=where
+  )
+
+  def loss(params):
+    return jnp.square(
+        attention.apply(params, inputs=inputs, adj_idx=adj_idx, where=where) - 1.0
+    ).sum()
+
+  value, gradients = jax.jit(jax.value_and_grad(loss))(variables)
+  assert bool(jnp.isfinite(value))
+  for gradient in jax.tree_util.tree_leaves(gradients):
+    assert bool(jnp.all(jnp.isfinite(gradient)))
+  updated = jax.tree_util.tree_map(lambda p, g: p - 0.001 * g, variables, gradients)
+  assert float(loss(updated)) < float(value)
