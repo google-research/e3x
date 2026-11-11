@@ -26,7 +26,6 @@ from ._clebsch_gordan_lut import _generate_clebsch_gordan_lookup_table
 from ._common import _cartesian_permutation
 from ._common import _cartesian_permutation_for_degree
 from ._common import _check_degree_is_positive_or_zero
-from ._common import _integer_powers
 from ._normalization import Normalization
 from ._normalization import normalization_constant
 from ._spherical_harmonics_lut import _generate_spherical_harmonics_lookup_table
@@ -138,36 +137,48 @@ def spherical_harmonics(
   _check_degree_is_positive_or_zero(max_degree)
 
   with jax.ensure_compile_time_eval():
-    # Load/Generate lookup table and convert to jax array.
+    # Load/Generate lookup table and extract per-degree coefficient blocks.
     lookup_table = _generate_spherical_harmonics_lookup_table(max_degree)
-    cm = jnp.asarray(lookup_table['cm'])
-    ls = jnp.asarray(lookup_table['ls'])
-    # Apply normalization constants.
+    cm = lookup_table['cm']
+    ls = lookup_table['ls']
+    ls_index = {
+        (int(row[0]), int(row[1]), int(row[2])): idx
+        for idx, row in enumerate(ls)
+    }
+    cm_blocks = []
     for l in range(max_degree + 1):
-      cm = cm.at[:, l**2 : (l + 1) ** 2].multiply(
-          normalization_constant(normalization, l)
-      )
-    # Optionally reorder spherical harmonics to Cartesian order.
-    if cartesian_order:
-      cm = cm[:, _cartesian_permutation(max_degree)]
+      rec_rows = []
+      for a in range(l, -1, -1):
+        for b in range(l - a, -1, -1):
+          rec_rows.append(ls_index[(a, b, l - a - b)])
+      block = jnp.asarray(cm[rec_rows, l**2 : (l + 1) ** 2])
+      block = block * normalization_constant(normalization, l)
+      if cartesian_order:
+        block = block[:, _cartesian_permutation_for_degree(l)]
+      cm_blocks.append(block)
 
   # Normalize r (if not already normalized).
   if not r_is_normalized:
     r = ops.normalize(r, axis=-1)
+  dtype = jnp.result_type(r, cm_blocks[0])
+  r = r.astype(dtype)
 
-  # Calculate all relevant monomials in the (x, y, z)-coordinates.
-  # Note: This is done via integer powers and indexing on purpose! Using
-  # jnp.power or the "**"-operator for this operation leads to NaNs in the
-  # gradients for some inputs (jnp.power is not NaN-safe).
-  r_powers = _integer_powers(jnp.expand_dims(r, axis=-2), max_degree)
-  monomials = (
-      r_powers[..., 0][..., ls[:, 0]]  #   x**lx.
-      * r_powers[..., 1][..., ls[:, 1]]  # y**ly.
-      * r_powers[..., 2][..., ls[:, 2]]  # z**lz.
-  )
+  y0 = jnp.full((*r.shape[:-1], 1), cm_blocks[0][0, 0], dtype=dtype)
+  if max_degree == 0:
+    return y0
 
-  # Calculate and return spherical harmonics (linear combination of monomials).
-  return jnp.matmul(monomials, cm)
+  # Build homogeneous degree-l Cartesian monomials recursively via products
+  # (avoiding jnp.power / "**" so derivatives at r = 0 remain NaN-free).
+  outputs = [y0]
+  x, y, z = r[..., 0:1], r[..., 1:2], r[..., 2:3]
+  mon = r
+  outputs.append(jnp.matmul(mon, cm_blocks[1].astype(dtype)))
+  for l in range(2, max_degree + 1):
+    mon = jnp.concatenate(
+        (mon * x, mon[..., -l:] * y, mon[..., -1:] * z), axis=-1
+    )
+    outputs.append(jnp.matmul(mon, cm_blocks[l].astype(dtype)))
+  return jnp.concatenate(outputs, axis=-1)
 
 
 def solid_harmonics(

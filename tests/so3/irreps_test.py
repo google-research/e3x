@@ -660,3 +660,140 @@ def test_irreps_to_tensor_and_vice_versa(
       normalization=normalization,
   )
   assert jnp.allclose(x, y, atol=1e-5)
+
+
+@pytest.mark.parametrize('max_degree', [0, 1, 2, 3, 4, 5, 6])
+@pytest.mark.parametrize('cartesian_order', [True, False])
+@pytest.mark.parametrize(
+    'normalization', ['4pi', 'orthonormal', 'racah', 'schmidt']
+)
+@pytest.mark.parametrize('r_is_normalized', [True, False])
+def test_spherical_harmonics_matches_lookup_table_across_degrees(
+    max_degree: int,
+    cartesian_order: bool,
+    normalization: e3x.so3.Normalization,
+    r_is_normalized: bool,
+) -> None:
+  r_rand = jax.random.normal(jax.random.PRNGKey(17), shape=(2, 4, 3))
+  r_edge = jnp.asarray([
+      [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, -2.0, 0.0], [0.0, 0.0, 3.0]],
+      [[-1.0, 2.0, -0.5], [0.5, 0.5, 0.5], [2.0, 0.0, -1.0], [0.0, 1.5, 2.5]],
+  ])
+  r = jnp.concatenate([r_rand, r_edge], axis=1)
+  actual = e3x.so3.spherical_harmonics(
+      r,
+      max_degree=max_degree,
+      r_is_normalized=r_is_normalized,
+      cartesian_order=cartesian_order,
+      normalization=normalization,
+  )
+
+  lut = e3x.so3.irreps._generate_spherical_harmonics_lookup_table(max_degree)
+  cm = jnp.asarray(lut['cm'])
+  ls = jnp.asarray(lut['ls'])
+  for l in range(max_degree + 1):
+    cm = cm.at[:, l**2 : (l + 1) ** 2].multiply(
+        e3x.so3.irreps.normalization_constant(normalization, l)
+    )
+  if cartesian_order:
+    cm = cm[:, e3x.so3.irreps._cartesian_permutation(max_degree)]
+  r_ref = r if r_is_normalized else e3x.ops.normalize(r, axis=-1)
+  r_powers = e3x.so3._common._integer_powers(
+      jnp.expand_dims(r_ref, axis=-2), max_degree
+  )
+  monomials = (
+      r_powers[..., 0][..., ls[:, 0]]
+      * r_powers[..., 1][..., ls[:, 1]]
+      * r_powers[..., 2][..., ls[:, 2]]
+  )
+  expected = jnp.matmul(monomials, cm)
+  assert actual.shape == expected.shape
+  assert actual.dtype == expected.dtype
+  assert jnp.allclose(actual, expected, rtol=1e-5, atol=1e-5)
+
+
+@pytest.mark.parametrize('batch_shape', [tuple(), (4,), (2, 3), (0, 5)])
+@pytest.mark.parametrize('max_degree', [0, 1, 4])
+def test_spherical_harmonics_batch_shapes_jit_and_vmap(
+    batch_shape: tuple[int, ...], max_degree: int
+) -> None:
+  r = jax.random.normal(jax.random.PRNGKey(23), shape=(*batch_shape, 3))
+  is_empty = r.size == 0
+  fn = lambda x: e3x.so3.spherical_harmonics(
+      x,
+      max_degree=max_degree,
+      r_is_normalized=is_empty,
+      cartesian_order=False,
+  )
+  eager = fn(r)
+  jitted = jax.jit(fn)(r)
+  assert eager.shape == (*batch_shape, (max_degree + 1) ** 2)
+  assert jnp.allclose(eager, jitted, atol=1e-6)
+  if batch_shape and batch_shape[0] > 0:
+    vmapped = jax.vmap(fn)(r)
+    assert jnp.allclose(eager, vmapped, atol=1e-6)
+
+
+@pytest.mark.parametrize('max_degree', [0, 1, 2, 4, 6])
+@pytest.mark.parametrize('r_is_normalized', [True, False])
+def test_spherical_harmonics_zero_origin_grad_and_hessian(
+    max_degree: int, r_is_normalized: bool
+) -> None:
+  r0 = jnp.zeros((3,), dtype=jnp.float32)
+  fn = lambda x: e3x.so3.spherical_harmonics(
+      x, max_degree=max_degree, r_is_normalized=r_is_normalized
+  )
+  jac = jax.jacfwd(fn)(r0)
+  hess = jax.jacfwd(jax.jacrev(fn))(r0)
+  assert jnp.all(jnp.isfinite(jac))
+  assert jnp.all(jnp.isfinite(hess))
+
+  solid_fn = lambda x: e3x.so3.solid_harmonics(x, max_degree=max_degree)
+  solid_jac = jax.jacfwd(solid_fn)(r0)
+  solid_hess = jax.jacfwd(jax.jacrev(solid_fn))(r0)
+  assert jnp.all(jnp.isfinite(solid_jac))
+  assert jnp.all(jnp.isfinite(solid_hess))
+
+
+def test_spherical_harmonics_degree4_fourth_order_derivatives_at_origin() -> (
+    None
+):
+  finfo = jnp.finfo(jnp.float32)
+  x = jnp.asarray([
+      [0.0, 0.0, 0.0],
+      [finfo.tiny, 0.0, 0.0],
+      [finfo.eps, 0.0, 0.0],
+  ])
+  func = lambda r: e3x.so3.spherical_harmonics(r, max_degree=4)
+  for deriv in e3x.ops.evaluate_derivatives(func, x, max_order=4):
+    assert jnp.all(jnp.isfinite(deriv))
+
+
+@pytest.mark.parametrize('cartesian_order', [True, False])
+def test_spherical_harmonics_degree6_o3_equivariance(
+    cartesian_order: bool,
+) -> None:
+  r_key, rot_key = jax.random.split(jax.random.PRNGKey(31))
+  r = jax.random.normal(r_key, shape=(12, 3)) + 0.1
+  rot = e3x.so3.random_rotation(rot_key)
+  dmat = e3x.so3.wigner_d(rot, max_degree=6, cartesian_order=cartesian_order)
+  lhs = e3x.so3.spherical_harmonics(
+      r @ rot, max_degree=6, cartesian_order=cartesian_order
+  )
+  rhs = (
+      e3x.so3.spherical_harmonics(
+          r, max_degree=6, cartesian_order=cartesian_order
+      )
+      @ dmat
+  )
+  assert jnp.allclose(lhs, rhs, rtol=1e-5, atol=1e-5)
+
+  sh_neg = e3x.so3.spherical_harmonics(
+      -r, max_degree=6, cartesian_order=cartesian_order
+  )[:, None, :, None]
+  sh_ref = e3x.nn.reflect(
+      e3x.so3.spherical_harmonics(
+          r, max_degree=6, cartesian_order=cartesian_order
+      )[:, None, :, None]
+  )
+  assert jnp.allclose(sh_neg, sh_ref, rtol=1e-5, atol=1e-5)
