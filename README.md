@@ -35,7 +35,7 @@ Alternatively, you can clone this repository, enter the directory and run:
 If you are a developer, you might want to also install the optional development
 dependencies by running
 ```console
-> python -m pip install .[dev]
+> python -m pip install '.[dev]'
 ```
 instead.
 
