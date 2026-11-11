@@ -3,6 +3,9 @@ name: Unittests & Auto-publish
 # Allow to trigger the workflow manually (e.g. when deps changes)
 on: [push, workflow_dispatch]
 
+permissions:
+  contents: read
+
 jobs:
   pytest-job:
     runs-on: ubuntu-latest
@@ -13,14 +16,16 @@ jobs:
       cancel-in-progress: true
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
 
     # Install deps
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
       with:
-        python-version: 3.9
+        python-version: "3.12"
     - run: pip --version
-    - run: pip install -e .[dev]
+    - run: pip install -e . pytest pytest-xdist
     - run: pip freeze
 
     # Run tests (in parallel)
@@ -43,7 +48,7 @@ jobs:
 
     steps:
     # Publish the package (if local `__version__` > pip version)
-    - uses: etils-actions/pypi-auto-publish@v1
+    - uses: etils-actions/pypi-auto-publish@d0603b1e896ce8b754fd7df30731623c93546e89  # v1.5.6
       with:
         pypi-token: ${{ secrets.PYPI_API_TOKEN }}
         gh-token: ${{ secrets.GITHUB_TOKEN }}
